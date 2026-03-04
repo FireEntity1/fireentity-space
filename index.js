@@ -9,9 +9,9 @@ var projects = {
     ],
     "code": [
         {
-            "name": "Voidborne",
-            "description": "A story game where void enters a dystopian world of light.",
-            "link": "https://fire-entity.itch.io/voidborne",
+            "name": "fireentity space",
+            "description": "This website!",
+            "link": "https://fire-entity.space/",
             "image": "assets/voidborne.png"
         }
     ],
