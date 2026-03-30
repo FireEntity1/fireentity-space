@@ -99,6 +99,7 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		font-size: 0.86rem;
+		text-shadow: 0 0 8px rgba(216, 208, 196, 0.18);
 		transition: color 0.1s, text-shadow 0.1s;
 	}
 

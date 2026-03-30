@@ -33,7 +33,7 @@
 	];
 
 	var links: LinkEntry[] = [
-		{ label: 'gh', href: 'https://github.com/fireentity1', display: 'github.com/fireentity1' },
+		{ label: 'gh', href: 'https://github.com/fireentity1', display: 'fireentity1' },
 		{ label: 'em', href: 'mailto:hi@fireentity.space', display: 'hi@fireentity.space' }
 	];
 

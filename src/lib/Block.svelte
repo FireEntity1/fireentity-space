@@ -32,19 +32,22 @@
 </section>
 
 <style>
-	/* Retro broadcast palette — cycling per position */
-	.panel { --c: 232, 33, 42; }
-	.panel:nth-of-type(4n + 2) { --c: 66, 133, 244; }
-	.panel:nth-of-type(4n + 3) { --c: 251, 188, 5; }
-	.panel:nth-of-type(4n + 4) { --c: 52, 168, 83; }
+	.panel { --c: 255, 0, 128; }
+	.panel:nth-of-type(4n + 2) { --c: 0, 255, 255; }
+	.panel:nth-of-type(4n + 3) { --c: 185, 0, 255; }
+	.panel:nth-of-type(4n + 4) { --c: 0, 255, 128; }
+	.panel:nth-of-type(5n + 5) { --c: 255, 140, 0; }
 
 	.panel {
 		position: relative;
 		grid-column: span var(--colspan, 1);
 		grid-row: span var(--rowspan, 1);
-		border: 1px solid rgba(var(--c), 0.28);
+		border: 1px solid rgba(var(--c), 0.35);
 		padding: 1.25rem 1rem 1rem;
 		background: rgba(var(--c), 0.012);
+		box-shadow:
+			0 0 10px rgba(var(--c), 0.18),
+			inset 0 0 12px rgba(var(--c), 0.015);
 		transition:
 			border-color 0.2s,
 			background 0.2s,
@@ -53,14 +56,14 @@
 
 	.panel:hover,
 	.panel.active {
-		border-color: rgba(var(--c), 0.6);
+		border-color: rgba(var(--c), 0.65);
 		background: rgba(var(--c), 0.035);
 		box-shadow:
-			0 0 20px rgba(var(--c), 0.1),
-			inset 0 0 30px rgba(var(--c), 0.02);
+			0 0 14px rgba(var(--c), 0.22),
+			0 0 40px rgba(var(--c), 0.1),
+			inset 0 0 30px rgba(var(--c), 0.04);
 	}
 
-	/* Title sits on the top border — background masks the border behind it */
 	.panel-title {
 		position: absolute;
 		top: -0.62em;
@@ -91,6 +94,7 @@
 		font-size: 0.86rem;
 		line-height: 1.8;
 		color: rgba(216, 208, 196, 0.78);
+		text-shadow: 0 0 8px rgba(216, 208, 196, 0.18);
 		min-height: 3.5rem;
 	}
 
