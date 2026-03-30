@@ -234,7 +234,7 @@
 
 	<footer class="statusbar">
 		<div class="hints">
-			<span class="hint"><kbd>j</kbd><kbd>k</kbd> navigate</span>
+			<span class="hint"><kbd>j</kbd><kbd>k</kbd>/<kbd>←</kbd><kbd>→</kbd> navigate</span>
 			{#if hasItems}
 				<span class="sep">/</span>
 				<span class="hint"><kbd>↑</kbd><kbd>↓</kbd> select</span>
