@@ -123,6 +123,7 @@
 
 <div class="flex h-screen items-center justify-center">
 	{#if user}
+	<a href="/"><kbd style="font-size: 4em;">←</kbd></a>
 		<div class="text-white w-full max-w-xl px-4">
 			<div class="flex justify-between items-center">
 				<p>{user.email}</p>

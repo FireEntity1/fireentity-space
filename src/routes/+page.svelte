@@ -145,7 +145,7 @@
 		<h1 class="brand">fireentity.space</h1>
 		<div class="topbar-right">
 			<span class="indicator" aria-label="online">●</span>
-			<span class="tagline">// online</span>
+			<span class="tagline"><a href="/admin">// online</a></span>
 		</div>
 	</header>
 
