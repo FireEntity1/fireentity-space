@@ -94,7 +94,7 @@
 	}
 
 	.title {
-		color: rgba(216, 208, 196, 0.88);
+		color: rgba(216, 208, 196, 0.95);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;

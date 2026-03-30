@@ -92,7 +92,7 @@
 
 	.kv-row dd {
 		margin: 0;
-		color: rgba(216, 208, 196, 0.82);
+		color: rgba(216, 208, 196, 0.93);
 		font-size: 0.84rem;
 	}
 
@@ -138,7 +138,7 @@
 	}
 
 	.proj-name {
-		color: rgba(216, 208, 196, 0.88);
+		color: rgba(216, 208, 196, 0.95);
 		font-size: 0.86rem;
 	}
 
@@ -215,7 +215,7 @@
 	}
 
 	.lk-val {
-		color: rgba(216, 208, 196, 0.78);
+		color: rgba(216, 208, 196, 0.92);
 		font-size: 0.84rem;
 	}
 

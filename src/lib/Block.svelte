@@ -93,8 +93,8 @@
 		font-family: var(--font-mono);
 		font-size: 0.86rem;
 		line-height: 1.8;
-		color: rgba(216, 208, 196, 0.78);
-		text-shadow: 0 0 8px rgba(216, 208, 196, 0.18);
+		color: rgba(216, 208, 196, 0.92);
+		text-shadow: 0 0 8px rgba(216, 208, 196, 0.22);
 		min-height: 3.5rem;
 	}
 
