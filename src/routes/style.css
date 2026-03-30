@@ -107,7 +107,7 @@
 
 	.row-cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr 10ch 5rem;
+		grid-template-columns: 1fr 1fr 10ch 5rem 3rem;
 		gap: 1rem;
 		align-items: center;
 	}
@@ -127,8 +127,14 @@
 		transition: background 0.1s;
 	}
 
-	.proj-row:hover {
+	.proj-row:hover,
+	.proj-row.item-active {
 		background: rgba(251, 188, 5, 0.035);
+	}
+
+	.proj-row.item-active {
+		outline: 1px solid rgba(251, 188, 5, 0.22);
+		outline-offset: -1px;
 	}
 
 	.proj-name {
@@ -151,6 +157,35 @@
 		font-size: 0.72rem;
 		color: rgba(52, 168, 83, 0.7);
 		text-shadow: 0 0 6px rgba(52, 168, 83, 0.25);
+	}
+
+	.proj-links {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.proj-link {
+		display: flex;
+		align-items: center;
+		color: rgba(216, 208, 196, 0.22);
+		text-decoration: none;
+		transition: color 0.15s;
+		line-height: 0;
+	}
+
+	.proj-link:hover {
+		color: rgba(216, 208, 196, 0.8);
+	}
+
+	.proj-link svg {
+		width: 13px;
+		height: 13px;
+	}
+
+	.proj-link-empty {
+		width: 13px;
+		height: 13px;
 	}
 
 	.links {
@@ -193,6 +228,16 @@
 	.lk-link:hover {
 		color: rgb(52, 168, 83);
 		text-shadow: 0 0 8px rgba(52, 168, 83, 0.4);
+	}
+
+	.links li.item-active {
+		outline: 1px solid rgba(52, 168, 83, 0.25);
+		outline-offset: 1px;
+		background: rgba(52, 168, 83, 0.05);
+	}
+
+	.links li.item-active .lk-val {
+		color: rgba(216, 208, 196, 0.95);
 	}
 
 
@@ -288,7 +333,7 @@
 		}
 
 		.row-cols {
-			grid-template-columns: 1fr 1fr;
+			grid-template-columns: 1fr 1fr 3rem;
 		}
 
 		.proj-head span:nth-child(3),

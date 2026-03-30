@@ -5,7 +5,8 @@
 		album = undefined,
 		duration = undefined,
 		href = undefined,
-		index = 1
+		index = 1,
+		active = false
 	}: {
 		title: string;
 		info: string;
@@ -13,6 +14,7 @@
 		duration?: string;
 		href?: string;
 		index?: number;
+		active?: boolean;
 	} = $props();
 
 	let num = $derived(String(index).padStart(2, '0'));
@@ -29,11 +31,11 @@
 {/snippet}
 
 {#if href}
-	<a class="song-row" {href} target="_blank" rel="noopener noreferrer">
+	<a class="song-row" class:active {href} target="_blank" rel="noopener noreferrer">
 		{@render row()}
 	</a>
 {:else}
-	<div class="song-row">
+	<div class="song-row" class:active>
 		{@render row()}
 	</div>
 {/if}
@@ -55,17 +57,25 @@
 		cursor: pointer;
 	}
 
-	.song-row:hover {
+	.song-row:hover,
+	.song-row.active {
 		background: rgba(232, 33, 42, 0.065);
 	}
 
-	.song-row:hover .cur {
+	.song-row:hover .cur,
+	.song-row.active .cur {
 		opacity: 1;
 	}
 
-	.song-row:hover .title {
+	.song-row:hover .title,
+	.song-row.active .title {
 		color: #d8d0c4;
 		text-shadow: 0 0 10px rgba(232, 33, 42, 0.35);
+	}
+
+	.song-row.active {
+		outline: 1px solid rgba(232, 33, 42, 0.25);
+		outline-offset: -1px;
 	}
 
 	.cur {
