@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Block from '$lib/Block.svelte';
 	import Song from '$lib/Song.svelte';
+	import { Client, Databases } from 'appwrite';
 	import './style.css'
 
 	interface SongEntry {
@@ -9,12 +10,6 @@
 		album?: string;
 		duration?: string;
 		href?: string;
-	}
-
-	interface LinkEntry {
-		label: string;
-		href: string;
-		display: string;
 	}
 
 	interface Project {
@@ -26,21 +21,41 @@
 		url?: string;
 	}
 
-	var songs: SongEntry[] = [
-		{ title: 'Unbound', info: 'Ft. Kumi Hitsune | First lyrical song! ', album: 'Single', duration: '3:45', href: 'https://example.com' },
-		{ title: 'Lumenreach', info: 'Fast paced EDM!',album:'Single', duration: '4:12' },
-		{ title: 'Starfall', info: 'First published song! ', album: 'Single', duration: '2:58' }
-	];
+	const client = new Client()
+		.setEndpoint('https://sfo.cloud.appwrite.io/v1')
+		.setProject('69caeb7f0000bfb3a5c5');
 
-	var links: LinkEntry[] = [
+	const databases = new Databases(client);
+	const DATABASE_ID = '69cafd7c0030de77f390';
+
+	let songs = $state<SongEntry[]>([]);
+	let projects = $state<Project[]>([]);
+
+	const links = [
 		{ label: 'gh', href: 'https://github.com/fireentity1', display: 'fireentity1' },
 		{ label: 'em', href: 'mailto:hi@fireentity.space', display: 'hi@fireentity.space' }
 	];
 
-	var projects: Project[] = [
-		{ name: 'LIGHT//BOUND', stack: 'Godot · Garageband', status: 'working', progress: 7, github: 'https://github.com/fireentity1/beat-jumper', url: undefined },
-		{ name: 'fireentity.space', stack: 'Svelte · Tailwind', status: 'working', progress: 4, github: 'https://github.com/fireentity1/fireentity-space', url: 'https://fireentity.space' }
-	];
+	databases.listDocuments(DATABASE_ID, 'songs').then((res) => {
+		songs = res.documents.map((d) => ({
+			title: d.title,
+			info: d.info,
+			album: d.album,
+			duration: d.duration,
+			href: d.link,
+		}));
+	});
+
+	databases.listDocuments(DATABASE_ID, 'projects').then((res) => {
+		projects = res.documents.map((d) => ({
+			name: d.name,
+			stack: d.stack,
+			progress: d.progress,
+			status: d.status,
+			github: d.repository || undefined,
+			url: d.play || undefined,
+		}));
+	});
 
 	var status = {
 		'currently': 'fireentity.space',
