@@ -2,6 +2,7 @@
 	import Block from '$lib/Block.svelte';
 	import Song from '$lib/Song.svelte';
 	import { Client, Databases } from 'appwrite';
+	import { onMount } from 'svelte';
 	import './style.css'
 
 	interface SongEntry {
@@ -30,24 +31,25 @@
 
 	let songs = $state<SongEntry[]>([]);
 	let projects = $state<Project[]>([]);
+	let online = $state(true);
 
 	const links = [
 		{ label: 'gh', href: 'https://github.com/fireentity1', display: 'fireentity1' },
 		{ label: 'em', href: 'mailto:hi@fireentity.space', display: 'hi@fireentity.space' }
 	];
 
-	databases.listDocuments(DATABASE_ID, 'songs').then((res) => {
-		songs = res.documents.map((d) => ({
+	Promise.all([
+		databases.listDocuments(DATABASE_ID, 'songs'),
+		databases.listDocuments(DATABASE_ID, 'projects'),
+	]).then(([songsRes, projectsRes]) => {
+		songs = songsRes.documents.map((d) => ({
 			title: d.title,
 			info: d.info,
 			album: d.album,
 			duration: d.duration,
 			href: d.link,
 		}));
-	});
-
-	databases.listDocuments(DATABASE_ID, 'projects').then((res) => {
-		projects = res.documents.map((d) => ({
+		projects = projectsRes.documents.map((d) => ({
 			name: d.name,
 			stack: d.stack,
 			progress: d.progress,
@@ -55,6 +57,8 @@
 			github: d.repository || undefined,
 			url: d.play || undefined,
 		}));
+	}).catch(() => {
+		online = false;
 	});
 
 	var status = {
@@ -84,6 +88,389 @@
 			window.open(href, '_blank', 'noopener,noreferrer');
 		}
 	}
+
+	let canvas: HTMLCanvasElement;
+
+	onMount(() => {
+		const ctx = canvas.getContext('2d')!;
+		let W = window.innerWidth;
+		let H = window.innerHeight;
+		canvas.width = W;
+		canvas.height = H;
+
+		// ── Streaks ─────────────────────────────────────────────────────────────
+		const COUNT = 100;
+		const BASE_ANGLE = Math.PI / 5;
+
+		interface Streak {
+			x: number; y: number;
+			hue: number; hueSpeed: number;
+			speed: number; length: number; width: number;
+			opacity: number; angle: number; glowing: boolean;
+			shimmer: number; shimmerSpeed: number;
+		}
+
+		function spawnStreak(scatter = false): Streak {
+			const length = 40 + Math.random() * 180;
+			const angle = BASE_ANGLE + (Math.random() - 0.5) * 0.45;
+			const dx = Math.sin(angle), dy = Math.cos(angle);
+			const x = scatter ? Math.random() * (W + length) - length
+				: Math.random() < 0.75 ? Math.random() * W : -length * dx;
+			const y = scatter ? Math.random() * H : -length * dy;
+			return {
+				x, y,
+				hue: Math.random() * 360,
+				hueSpeed: (Math.random() - 0.5) * 0.4,
+				speed: 0.6 + Math.random() * 2.8,
+				length, angle,
+				width: 0.4 + Math.random() * 1.2,
+				opacity: 0.2 + Math.random() * 0.65,
+				glowing: Math.random() < 0.35,
+				shimmer: Math.random() * Math.PI * 2,
+				shimmerSpeed: 0.08 + Math.random() * 0.18,
+			};
+		}
+
+		const streaks: Streak[] = Array.from({ length: COUNT }, () => spawnStreak(true));
+
+		// ── City ─────────────────────────────────────────────────────────────────
+		const PALETTE = [320, 185, 270, 45, 160, 210, 0, 30]; // neon hues
+
+		interface Win {
+			x: number; y: number; size: number;
+			alpha: number; target: number; timer: number; hue: number;
+		}
+		interface Bldg {
+			x: number; top: number; w: number; h: number;
+			hue: number; layer: number;
+			wins: Win[];
+			antenna: boolean; antennaH: number;
+		}
+
+		let buildings: Bldg[] = [];
+
+		function buildCity() {
+			buildings = [];
+			for (let layer = 0; layer < 2; layer++) {
+				const maxH = layer === 0 ? H * 0.20 : H * 0.30;
+				const minH = layer === 0 ? H * 0.07 : H * 0.10;
+				const wMin = layer === 0 ? 22 : 28;
+				const wMax = layer === 0 ? 55 : 95;
+				const wSize = layer === 0 ? 3 : 4;
+				const wGap = layer === 0 ? 7 : 10;
+				const pad = 7;
+				let x = -15;
+
+				while (x < W + 20) {
+					const w = wMin + Math.random() * (wMax - wMin);
+					const h = minH + Math.random() * (maxH - minH);
+					const top = H - h;
+					const hue = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+					const wins: Win[] = [];
+
+					for (let wy = top + pad + 6; wy < H - pad; wy += wGap) {
+						for (let wx = x + pad; wx < x + w - pad - wSize; wx += wGap) {
+							const initAlpha = Math.random() > 0.4 ? 0.6 + Math.random() * 0.4 : 0;
+						wins.push({
+							x: wx, y: wy, size: wSize,
+							alpha: initAlpha, target: initAlpha,
+							timer: Math.floor(Math.random() * 500),
+							hue: hue + (Math.random() - 0.5) * 50,
+						});
+						}
+					}
+
+					buildings.push({
+						x, top, w, h, hue, layer, wins,
+						antenna: layer === 1 && Math.random() < 0.4,
+						antennaH: 10 + Math.random() * 22,
+					});
+					x += w - (layer === 0 ? 4 : 6);
+				}
+			}
+			buildings.sort((a, b) => a.layer - b.layer);
+		}
+
+		buildCity();
+
+		function drawCity() {
+			for (const b of buildings) {
+				const alpha = b.layer === 0 ? 0.5 : 1.0;
+				const blur  = b.layer === 0 ? 5 : 10;
+				const lw    = b.layer === 0 ? 0.7 : 1.1;
+				const col   = `hsl(${b.hue},100%,58%)`;
+
+				// Silhouette
+				ctx.fillStyle = '#06040a';
+				ctx.fillRect(b.x, b.top, b.w, b.h);
+
+				// Neon outline — outer glow
+				ctx.save();
+				ctx.globalAlpha = alpha * 0.5;
+				ctx.strokeStyle = col;
+				ctx.lineWidth = lw * 3;
+				ctx.shadowColor = col;
+				ctx.shadowBlur = blur * 2;
+				ctx.strokeRect(b.x + 0.5, b.top + 0.5, b.w - 1, b.h - 1);
+				ctx.restore();
+
+				// Neon outline — crisp inner
+				ctx.save();
+				ctx.globalAlpha = alpha;
+				ctx.strokeStyle = col;
+				ctx.lineWidth = lw;
+				ctx.shadowColor = col;
+				ctx.shadowBlur = blur;
+				ctx.strokeRect(b.x + 0.5, b.top + 0.5, b.w - 1, b.h - 1);
+				ctx.restore();
+
+				// Antenna
+				if (b.antenna) {
+					const ax = b.x + b.w / 2;
+					ctx.save();
+					ctx.globalAlpha = alpha;
+					ctx.strokeStyle = col;
+					ctx.lineWidth = 0.8;
+					ctx.shadowColor = col;
+					ctx.shadowBlur = blur;
+					ctx.beginPath();
+					ctx.moveTo(ax, b.top);
+					ctx.lineTo(ax, b.top - b.antennaH);
+					ctx.stroke();
+					// blinking tip
+					ctx.beginPath();
+					ctx.arc(ax, b.top - b.antennaH, 1.5, 0, Math.PI * 2);
+					ctx.fillStyle = `hsl(${b.hue},100%,90%)`;
+					ctx.shadowBlur = 8;
+					ctx.fill();
+					ctx.restore();
+				}
+
+				// Windows
+				for (const win of b.wins) {
+					win.timer--;
+					if (win.timer <= 0) {
+						const goOn = win.target === 0;
+						win.target = goOn ? 0.6 + Math.random() * 0.4 : 0;
+						// stay lit a long time; off transitions are quick
+						win.timer = goOn
+							? 60 + Math.floor(Math.random() * 120)
+							: 30 + Math.floor(Math.random() * 200);
+					}
+					// smooth lerp toward target
+					win.alpha += (win.target - win.alpha) * 0.112;
+					if (win.alpha < 0.01) continue;
+					ctx.save();
+					ctx.globalAlpha = alpha * win.alpha;
+					ctx.fillStyle = `hsl(${win.hue},100%,75%)`;
+					ctx.shadowColor = `hsl(${win.hue},100%,70%)`;
+					ctx.shadowBlur = b.layer === 0 ? 4 : 7;
+					ctx.fillRect(win.x, win.y, win.size, win.size);
+					ctx.restore();
+				}
+			}
+
+			// Ground glow
+			const ground = ctx.createLinearGradient(0, H - 6, 0, H);
+			ground.addColorStop(0, 'rgba(180,0,255,0.0)');
+			ground.addColorStop(1, 'rgba(180,0,255,0.0)');
+			ctx.fillStyle = ground;
+			ctx.fillRect(0, H - 6, W, 6);
+
+			// Horizon fog — fades city into the dark bg
+			const fog = ctx.createLinearGradient(0, H - (H * 0.35), 0, H - (H * 0.28));
+			fog.addColorStop(0, 'rgba(6,4,10,0)');
+			fog.addColorStop(1, 'rgba(6,4,10,0.55)');
+			ctx.fillStyle = fog;
+			ctx.fillRect(0, H - H * 0.35, W, H * 0.35);
+		}
+
+		// ── Sun ──────────────────────────────────────────────────────────────────
+		let frame = 0;
+
+		// Offscreen canvas so we can apply a soft radial mask without ctx.clip()
+		const sunCanvas = document.createElement('canvas');
+		sunCanvas.width = W; sunCanvas.height = H;
+		const sctx = sunCanvas.getContext('2d')!;
+
+		function drawSun() {
+			const pulse  = 0.5 + 0.5 * Math.sin(frame * 0.018);
+			const pulse2 = 0.5 + 0.5 * Math.sin(frame * 0.011 + 1.3);
+			const cx = W / 2;
+			const cy = H - H * 0.27;
+			const R  = Math.min(W * 0.52, H * 0.46);
+
+			// ── Atmospheric haze on main canvas ──
+			// colours: pink (#ff0066 → hue 336) and purple (#9900ff → hue 270)
+			const atm = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 2.8);
+			atm.addColorStop(0,    `hsla(336, 100%, 55%, ${0.13 + 0.05 * pulse})`);
+			atm.addColorStop(0.28, `hsla(285, 100%, 48%, ${0.09 + 0.04 * pulse2})`);
+			atm.addColorStop(0.65, `hsla(270, 100%, 38%, 0.03)`);
+			atm.addColorStop(1,    `rgba(0,0,0,0)`);
+			ctx.fillStyle = atm;
+			ctx.fillRect(0, cy - R * 2.8, W, R * 2.8);
+
+			// ── Draw sun disc + stripes on offscreen canvas ──
+			sctx.clearRect(0, 0, W, H);
+
+			// Body: yellow-white → hot pink → purple — matches site's brand gradient
+			const body = sctx.createLinearGradient(cx, cy - R, cx, cy);
+			body.addColorStop(0,    `rgba(255, 245, 160, ${0.75 + 0.08 * pulse})`); // lemon white
+			body.addColorStop(0.15, `rgba(255, 100, 180, 0.82)`);                   // hot pink #ff0066
+			body.addColorStop(0.45, `rgba(180,   0, 255, 0.84)`);                   // purple  #9900ff
+			body.addColorStop(0.78, `rgba(80,    0, 200, 0.78)`);
+			body.addColorStop(1,    `rgba(30,    0, 120, 0.65)`);
+			sctx.fillStyle = body;
+			sctx.fillRect(cx - R - 1, cy - R - 1, R * 2 + 2, R + 2);
+
+			// Stripes: fewer, slower
+			sctx.fillStyle = 'rgba(6,4,10,0.96)';
+			const drift = (frame * 0.012) % 1; // slower
+			const N = 10;                        // fewer bars
+			for (let i = 0; i < N; i++) {
+				const ti = (i + drift) / N;
+				const t  = 1 - Math.pow(1 - ti, 2.6);
+				const y  = cy - R * (1 - t);
+				const thickness = Math.max(1.5, (1 - t) * 12 + 1.5);
+				sctx.fillRect(cx - R - 1, y - thickness * 0.5, R * 2 + 2, thickness);
+			}
+
+			// Soft circular mask — destination-in means only where this gradient
+			// is opaque will the sun survive; edges fade to 0 with no hard boundary
+			sctx.globalCompositeOperation = 'destination-in';
+			const mask = sctx.createRadialGradient(cx, cy, R * 0.68, cx, cy, R * 1.01);
+			mask.addColorStop(0,   'rgba(0,0,0,1)');
+			mask.addColorStop(0.7, 'rgba(0,0,0,1)');
+			mask.addColorStop(1,   'rgba(0,0,0,0)');
+			sctx.fillStyle = mask;
+			sctx.fillRect(cx - R * 1.05, cy - R * 1.05, R * 2.1, R * 1.05);
+			sctx.globalCompositeOperation = 'source-over';
+
+			// Blit offscreen sun onto main canvas
+			ctx.drawImage(sunCanvas, 0, 0);
+		}
+
+		// ── Render loop ──────────────────────────────────────────────────────────
+		let raf: number;
+
+		function draw() {
+			ctx.clearRect(0, 0, W, H);
+			frame++;
+
+			// Sun (furthest back)
+			drawSun();
+
+			// Streaks
+			for (const s of streaks) {
+				const sdx = Math.sin(s.angle), sdy = Math.cos(s.angle);
+				const tx = s.x - sdx * s.length, ty = s.y - sdy * s.length;
+
+				s.shimmer += s.shimmerSpeed;
+				const twinkle = 0.75 + 0.25 * Math.sin(s.shimmer);
+
+				if (s.glowing) {
+					// wide soft halo
+					const glow = ctx.createLinearGradient(tx, ty, s.x, s.y);
+					glow.addColorStop(0, `hsla(${s.hue},100%,70%,0)`);
+					glow.addColorStop(0.6, `hsla(${s.hue},100%,65%,${s.opacity * 0.10 * twinkle})`);
+					glow.addColorStop(1, `hsla(${s.hue},100%,70%,${s.opacity * 0.28 * twinkle})`);
+					ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(s.x, s.y);
+					ctx.strokeStyle = glow; ctx.lineWidth = s.width * 7;
+					ctx.lineCap = 'round'; ctx.stroke();
+				}
+
+				// core streak
+				const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
+				grad.addColorStop(0, `hsla(${s.hue},100%,75%,0)`);
+				grad.addColorStop(0.55, `hsla(${s.hue + 20},100%,72%,${s.opacity * 0.4})`);
+				grad.addColorStop(1, `hsla(${s.hue + 40},100%,82%,${s.opacity * twinkle})`);
+				ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(s.x, s.y);
+				ctx.strokeStyle = grad; ctx.lineWidth = s.width;
+				ctx.lineCap = 'round'; ctx.stroke();
+
+				if (s.glowing) {
+					const r = s.width * 1.6 * twinkle;
+					const flair = s.opacity * twinkle;
+
+					// bright core dot
+					ctx.beginPath();
+					ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+					ctx.fillStyle = `hsla(${s.hue},80%,98%,${flair})`;
+					ctx.shadowColor = `hsl(${s.hue},100%,75%)`;
+					ctx.shadowBlur = 10 * twinkle;
+					ctx.fill();
+					ctx.shadowBlur = 0;
+
+					// 4-pointed cross flare
+					const armLen = r * 5 * twinkle;
+					const perpAngle = s.angle + Math.PI / 2;
+					for (const [ax, ay] of [
+						[Math.sin(s.angle), Math.cos(s.angle)],
+						[Math.sin(perpAngle), Math.cos(perpAngle)],
+					]) {
+						const flare = ctx.createLinearGradient(
+							s.x - ax * armLen, s.y - ay * armLen,
+							s.x + ax * armLen, s.y + ay * armLen,
+						);
+						flare.addColorStop(0,   `hsla(${s.hue},100%,85%,0)`);
+						flare.addColorStop(0.45, `hsla(${s.hue},100%,90%,${flair * 0.7})`);
+						flare.addColorStop(0.5,  `hsla(${s.hue},100%,98%,${flair})`);
+						flare.addColorStop(0.55, `hsla(${s.hue},100%,90%,${flair * 0.7})`);
+						flare.addColorStop(1,    `hsla(${s.hue},100%,85%,0)`);
+						ctx.beginPath();
+						ctx.moveTo(s.x - ax * armLen, s.y - ay * armLen);
+						ctx.lineTo(s.x + ax * armLen, s.y + ay * armLen);
+						ctx.strokeStyle = flare;
+						ctx.lineWidth = 0.8;
+						ctx.stroke();
+					}
+
+					// tiny scatter sparkles around the head
+					for (let i = 0; i < 4; i++) {
+						const angle = Math.random() * Math.PI * 2;
+						const dist  = r * (1.5 + Math.random() * 3.5);
+						const pr    = 0.5 + Math.random() * 0.8;
+						ctx.beginPath();
+						ctx.arc(
+							s.x + Math.cos(angle) * dist,
+							s.y + Math.sin(angle) * dist,
+							pr, 0, Math.PI * 2,
+						);
+						ctx.fillStyle = `hsla(${s.hue + Math.random() * 60 - 30},100%,90%,${flair * Math.random() * 0.8})`;
+						ctx.fill();
+					}
+				}
+
+				s.x += sdx * s.speed; s.y += sdy * s.speed; s.hue += s.hueSpeed;
+				if (s.y - sdy * s.length > H || s.x - sdx * s.length > W) {
+					Object.assign(s, spawnStreak());
+				}
+			}
+
+			// City on top of streaks
+			drawCity();
+
+			raf = requestAnimationFrame(draw);
+		}
+
+		let resizeTimer: ReturnType<typeof setTimeout>;
+		const resize = () => {
+			W = window.innerWidth; H = window.innerHeight;
+			canvas.width = W; canvas.height = H;
+			sunCanvas.width = W; sunCanvas.height = H;
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(buildCity, 200);
+		};
+		window.addEventListener('resize', resize);
+
+		draw();
+
+		return () => {
+			cancelAnimationFrame(raf);
+			clearTimeout(resizeTimer);
+			window.removeEventListener('resize', resize);
+		};
+	});
 
 	function handleKeydown(e: KeyboardEvent) {
 		const el = e.target as HTMLElement;
@@ -140,12 +527,14 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="terminal">
+<canvas bind:this={canvas} style="position:fixed;inset:0;pointer-events:none;z-index:0;"></canvas>
+
+<div class="terminal" style="position:relative;z-index:1;">
 	<header class="topbar">
 		<h1 class="brand">fireentity.space</h1>
 		<div class="topbar-right">
-			<span class="indicator" aria-label="online">●</span>
-			<span class="tagline"><a href="/admin">// online</a></span>
+			<span class="indicator" aria-label="online" style={online ? '' : 'color: red;'}>●</span>
+			<span class="tagline" style={online ? '' : 'color: red;'}><a href="/admin">{online ? '// online' : '// offline'}</a></span>
 		</div>
 	</header>
 
@@ -247,7 +636,7 @@
 	</div>
 
 
-	<footer class="statusbar">
+	<!-- <footer class="statusbar">
 		<div class="hints">
 			<span class="hint"><kbd>j</kbd><kbd>k</kbd>/<kbd>←</kbd><kbd>→</kbd> navigate</span>
 			{#if hasItems}
@@ -260,5 +649,5 @@
 			<span class="hint"><kbd>esc</kbd> reset</span>
 		</div>
 		<span class="mode">{focusedItem >= 0 ? 'SELECT' : focusedPanel >= 0 ? 'FOCUSED' : 'MOUSE'}</span>
-	</footer>
+	</footer> -->
 </div>

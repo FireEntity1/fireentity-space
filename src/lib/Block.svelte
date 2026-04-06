@@ -44,7 +44,9 @@
 		grid-row: span var(--rowspan, 1);
 		border: 1px solid rgba(var(--c), 0.35);
 		padding: 1.25rem 1rem 1rem;
-		background: rgba(var(--c), 0.012);
+		background: linear-gradient(rgba(var(--c), 0.025), rgba(var(--c), 0.025)) rgba(6,4,10,0.78);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 		box-shadow:
 			0 0 10px rgba(var(--c), 0.18),
 			inset 0 0 12px rgba(var(--c), 0.015);
@@ -57,7 +59,7 @@
 	.panel:hover,
 	.panel.active {
 		border-color: rgba(var(--c), 0.65);
-		background: rgba(var(--c), 0.035);
+		background: linear-gradient(rgba(var(--c), 0.06), rgba(var(--c), 0.06)) rgba(6,4,10,0.82);
 		box-shadow:
 			0 0 14px rgba(var(--c), 0.22),
 			0 0 40px rgba(var(--c), 0.1),
