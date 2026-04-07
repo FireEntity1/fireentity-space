@@ -62,7 +62,7 @@
 	});
 
 	var status = {
-		'currently': 'fireentity.space',
+		'currently': 'LIGHT//BOUND',
 		'focus': 'school',
 		'status': 'locked in',
 		'status_active': false
