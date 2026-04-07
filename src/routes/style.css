@@ -326,6 +326,13 @@
 
 		.topbar {
 			padding: 0.6rem 1rem;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.3rem;
+		}
+
+		.brand {
+			text-align: center;
 		}
 
 		.statusbar {

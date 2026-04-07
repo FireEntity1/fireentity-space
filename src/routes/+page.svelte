@@ -94,7 +94,8 @@
 	onMount(() => {
 		const ctx = canvas.getContext('2d')!;
 		let W = window.innerWidth;
-		let H = window.innerHeight;
+		let VH = window.innerHeight; // viewport height — for sizing sun, buildings, fog
+		let H = Math.max(VH, document.documentElement.scrollHeight); // full page height — canvas size + city position
 		canvas.width = W;
 		canvas.height = H;
 
@@ -169,7 +170,7 @@
 		// Fog gradient only depends on H — cache it between resizes.
 		let fogGrad!: CanvasGradient;
 		function makeFogGrad() {
-			fogGrad = ctx.createLinearGradient(0, H - H * 0.35, 0, H - H * 0.28);
+			fogGrad = ctx.createLinearGradient(0, H - VH * 0.35, 0, H - VH * 0.28);
 			fogGrad.addColorStop(0, 'rgba(6,4,10,0)');
 			fogGrad.addColorStop(1, 'rgba(6,4,10,0.20)');
 		}
@@ -192,24 +193,34 @@
 				sc.fillStyle = '#06040a';
 				sc.fillRect(b.x, b.top, b.w, b.h);
 
-				// Neon outline — outer glow
+				// Neon outline — outer glow (3 sides, no bottom)
 				sc.save();
 				sc.globalAlpha = alpha * 0.5;
 				sc.strokeStyle = col;
 				sc.lineWidth = lw * 3;
 				sc.shadowColor = col;
 				sc.shadowBlur = blur * 2;
-				sc.strokeRect(b.x + 0.5, b.top + 0.5, b.w - 1, b.h - 1);
+				sc.beginPath();
+				sc.moveTo(b.x + 0.5, b.top + b.h);
+				sc.lineTo(b.x + 0.5, b.top + 0.5);
+				sc.lineTo(b.x + b.w - 0.5, b.top + 0.5);
+				sc.lineTo(b.x + b.w - 0.5, b.top + b.h);
+				sc.stroke();
 				sc.restore();
 
-				// Neon outline — crisp inner
+				// Neon outline — crisp inner (3 sides, no bottom)
 				sc.save();
 				sc.globalAlpha = alpha;
 				sc.strokeStyle = col;
 				sc.lineWidth = lw;
 				sc.shadowColor = col;
 				sc.shadowBlur = blur;
-				sc.strokeRect(b.x + 0.5, b.top + 0.5, b.w - 1, b.h - 1);
+				sc.beginPath();
+				sc.moveTo(b.x + 0.5, b.top + b.h);
+				sc.lineTo(b.x + 0.5, b.top + 0.5);
+				sc.lineTo(b.x + b.w - 0.5, b.top + 0.5);
+				sc.lineTo(b.x + b.w - 0.5, b.top + b.h);
+				sc.stroke();
 				sc.restore();
 
 				// Antenna
@@ -238,8 +249,8 @@
 		function buildCity() {
 			buildings = [];
 			for (let layer = 0; layer < 2; layer++) {
-				const maxH = layer === 0 ? H * 0.20 : H * 0.30;
-				const minH = layer === 0 ? H * 0.07 : H * 0.10;
+				const maxH = layer === 0 ? VH * (isMobile ? 0.28 : 0.20) : VH * (isMobile ? 0.44 : 0.30);
+				const minH = layer === 0 ? VH * (isMobile ? 0.10 : 0.07) : VH * (isMobile ? 0.16 : 0.10);
 				const wMin = layer === 0 ? 22 : 28;
 				const wMax = layer === 0 ? 55 : 95;
 				const wSize = layer === 0 ? 3 : 4;
@@ -318,7 +329,7 @@
 
 			// Horizon fog
 			ctx.fillStyle = fogGrad;
-			ctx.fillRect(0, H - H * 0.35, W, H * 0.35);
+			ctx.fillRect(0, H - VH * 0.35, W, VH * 0.35);
 		}
 
 		// ── Sun ──────────────────────────────────────────────────────────────────
@@ -332,8 +343,8 @@
 			const pulse  = 0.5 + 0.5 * Math.sin(frame * 0.009);
 			const pulse2 = 0.5 + 0.5 * Math.sin(frame * 0.0055 + 1.3);
 			const cx = W / 2;
-			const cy = H - H * 0.09;
-			const R  = Math.min(W * 0.52, H * 0.46);
+			const cy = H - VH * 0.09;
+			const R  = Math.min(W * 0.52, VH * 0.46);
 
 			// Atmospheric haze on main canvas
 			const atm = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 2.8);
@@ -447,7 +458,9 @@
 
 		let resizeTimer: ReturnType<typeof setTimeout>;
 		const resize = () => {
-			W = window.innerWidth; H = window.innerHeight;
+			W = window.innerWidth;
+			VH = window.innerHeight;
+			H = Math.max(VH, document.documentElement.scrollHeight);
 			canvas.width = W; canvas.height = H;
 			sunCanvas.width = W; sunCanvas.height = H;
 			cityL0.width = W; cityL0.height = H;
@@ -456,6 +469,20 @@
 			resizeTimer = setTimeout(buildCity, 200);
 		};
 		window.addEventListener('resize', resize);
+
+		// Rebuild when async content (songs, projects) loads and changes the page height.
+		const ro = new ResizeObserver(() => {
+			const newH = Math.max(window.innerHeight, document.documentElement.scrollHeight);
+			if (Math.abs(newH - H) > 10) {
+				H = newH;
+				canvas.height = H;
+				sunCanvas.height = H;
+				cityL0.height = H;
+				cityL1.height = H;
+				buildCity();
+			}
+		});
+		ro.observe(document.body);
 
 		// Pause animation when the tab is not visible to save CPU/GPU.
 		const onVisibilityChange = () => {
@@ -475,6 +502,7 @@
 			clearTimeout(resizeTimer);
 			window.removeEventListener('resize', resize);
 			document.removeEventListener('visibilitychange', onVisibilityChange);
+			ro.disconnect();
 		};
 	});
 
@@ -533,7 +561,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<canvas bind:this={canvas} style="position:fixed;inset:0;pointer-events:none;z-index:0;"></canvas>
+<canvas bind:this={canvas} style="position:absolute;top:0;left:0;pointer-events:none;z-index:0;"></canvas>
 
 <div class="terminal" style="position:relative;z-index:1;">
 	<header class="topbar">
