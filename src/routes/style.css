@@ -4,6 +4,13 @@
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
+		padding-bottom: 55vh;
+	}
+
+	@media (max-width: 768px) {
+		.terminal {
+			padding-bottom: 45vh;
+		}
 	}
 
 	.topbar {

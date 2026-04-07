@@ -170,7 +170,7 @@
 		// Fog gradient only depends on H — cache it between resizes.
 		let fogGrad!: CanvasGradient;
 		function makeFogGrad() {
-			fogGrad = ctx.createLinearGradient(0, H - VH * 0.35, 0, H - VH * 0.28);
+			fogGrad = ctx.createLinearGradient(0, VH * 0.65, 0, VH * 0.72);
 			fogGrad.addColorStop(0, 'rgba(6,4,10,0)');
 			fogGrad.addColorStop(1, 'rgba(6,4,10,0.20)');
 		}
@@ -189,11 +189,11 @@
 				const lw    = b.layer === 0 ? 0.7 : 1.1;
 				const col   = `hsl(${b.hue},100%,58%)`;
 
-				// Silhouette
+				// Silhouette — extends to canvas bottom so scrolling reveals nothing behind
 				sc.fillStyle = '#06040a';
-				sc.fillRect(b.x, b.top, b.w, b.h);
+				sc.fillRect(b.x, b.top, b.w, H - b.top);
 
-				// Neon outline — outer glow (3 sides, no bottom)
+				// Neon outline — outer glow (sides only, no bottom, extends to canvas bottom)
 				sc.save();
 				sc.globalAlpha = alpha * 0.5;
 				sc.strokeStyle = col;
@@ -201,14 +201,14 @@
 				sc.shadowColor = col;
 				sc.shadowBlur = blur * 2;
 				sc.beginPath();
-				sc.moveTo(b.x + 0.5, b.top + b.h);
+				sc.moveTo(b.x + 0.5, H);
 				sc.lineTo(b.x + 0.5, b.top + 0.5);
 				sc.lineTo(b.x + b.w - 0.5, b.top + 0.5);
-				sc.lineTo(b.x + b.w - 0.5, b.top + b.h);
+				sc.lineTo(b.x + b.w - 0.5, H);
 				sc.stroke();
 				sc.restore();
 
-				// Neon outline — crisp inner (3 sides, no bottom)
+				// Neon outline — crisp inner (sides only, no bottom, extends to canvas bottom)
 				sc.save();
 				sc.globalAlpha = alpha;
 				sc.strokeStyle = col;
@@ -216,10 +216,10 @@
 				sc.shadowColor = col;
 				sc.shadowBlur = blur;
 				sc.beginPath();
-				sc.moveTo(b.x + 0.5, b.top + b.h);
+				sc.moveTo(b.x + 0.5, H);
 				sc.lineTo(b.x + 0.5, b.top + 0.5);
 				sc.lineTo(b.x + b.w - 0.5, b.top + 0.5);
-				sc.lineTo(b.x + b.w - 0.5, b.top + b.h);
+				sc.lineTo(b.x + b.w - 0.5, H);
 				sc.stroke();
 				sc.restore();
 
@@ -249,8 +249,8 @@
 		function buildCity() {
 			buildings = [];
 			for (let layer = 0; layer < 2; layer++) {
-				const maxH = layer === 0 ? VH * (isMobile ? 0.28 : 0.20) : VH * (isMobile ? 0.44 : 0.30);
-				const minH = layer === 0 ? VH * (isMobile ? 0.10 : 0.07) : VH * (isMobile ? 0.16 : 0.10);
+				const maxH = layer === 0 ? VH * 0.20 : VH * 0.30;
+				const minH = layer === 0 ? VH * 0.07 : VH * 0.10;
 				const wMin = layer === 0 ? 22 : 28;
 				const wMax = layer === 0 ? 55 : 95;
 				const wSize = layer === 0 ? 3 : 4;
@@ -261,7 +261,7 @@
 				while (x < W + 20) {
 					const w = wMin + Math.random() * (wMax - wMin);
 					const h = minH + Math.random() * (maxH - minH);
-					const top = H - h;
+					const top = VH - h;
 					const hue = PALETTE[Math.floor(Math.random() * PALETTE.length)];
 					const wins: Win[] = [];
 
@@ -329,7 +329,14 @@
 
 			// Horizon fog
 			ctx.fillStyle = fogGrad;
-			ctx.fillRect(0, H - VH * 0.35, W, VH * 0.35);
+			ctx.fillRect(0, VH * 0.65, W, VH * 0.35);
+
+			// Fade to black at the very bottom of the canvas
+			const bottomFade = ctx.createLinearGradient(0, H - VH * 0.4, 0, H);
+			bottomFade.addColorStop(0, 'rgba(6,4,10,0)');
+			bottomFade.addColorStop(1, 'rgba(6,4,10,1)');
+			ctx.fillStyle = bottomFade;
+			ctx.fillRect(0, H - VH * 0.4, W, VH * 0.4);
 		}
 
 		// ── Sun ──────────────────────────────────────────────────────────────────
@@ -343,8 +350,8 @@
 			const pulse  = 0.5 + 0.5 * Math.sin(frame * 0.009);
 			const pulse2 = 0.5 + 0.5 * Math.sin(frame * 0.0055 + 1.3);
 			const cx = W / 2;
-			const cy = H - VH * 0.09;
-			const R  = Math.min(W * 0.52, VH * 0.46);
+			const cy = VH * 0.82;
+			const R  = Math.min(W * 0.72, VH * 0.56);
 
 			// Atmospheric haze on main canvas
 			const atm = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 2.8);
