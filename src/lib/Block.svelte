@@ -104,6 +104,8 @@
 		.panel {
 			grid-column: 1 / -1;
 			grid-row: span 1;
+			backdrop-filter: none;
+			-webkit-backdrop-filter: none;
 		}
 	}
 </style>
