@@ -68,6 +68,19 @@
 		'status_active': false
 	}
 
+	interface Billboard {
+		text?: string;
+		image?: string;
+		link?: string;
+	}
+
+	const BILLBOARD_HUES = [320, 185, 270, 45, 160, 210, 0, 30];
+
+	const billboards: Billboard[] = [
+		{ text: 'shuflduf.xyz', link: 'https://shuflduf.xyz', image: '/88x31/shuflduf.gif' },
+		{ text: 'LIGHT//BOUND — IN DEV', link: 'https://github.com/fireentity1/beat-jumper' },
+	];
+
 	const PANEL_COUNT = 5;
 	let focusedPanel = $state(-1);
 	let focusedItem = $state(-1);
@@ -155,8 +168,10 @@
 		let buildings: Bldg[] = [];
 		let layer0Bldgs: Bldg[] = [];
 		let layer1Bldgs: Bldg[] = [];
+		let layer2Bldgs: Bldg[] = [];
+		let layer3Bldgs: Bldg[] = [];
 
-		// Two offscreen canvases — one per depth layer — hold pre-rendered silhouettes,
+		// Offscreen canvases — one per depth layer — hold pre-rendered silhouettes,
 		// neon outlines, and antennas. shadowBlur is only paid at buildCity time, not
 		// every frame.
 		const cityL0 = document.createElement('canvas');
@@ -167,12 +182,28 @@
 		cityL1.width = W; cityL1.height = H;
 		const cctx1 = cityL1.getContext('2d')!;
 
-		// Fog gradient only depends on H — cache it between resizes.
+		// Scroll-depth layers — two more skylines visible as you scroll.
+		// Layer 2: small background buildings at VH*1.15.
+		// Layer 3: larger foreground buildings at the same baseline, drawn on top.
+		const cityL2 = document.createElement('canvas');
+		cityL2.width = W; cityL2.height = H;
+		const cctx2 = cityL2.getContext('2d')!;
+
+		const cityL3 = document.createElement('canvas');
+		cityL3.width = W; cityL3.height = H;
+		const cctx3 = cityL3.getContext('2d')!;
+
+		// Fog gradients — cached between resizes.
 		let fogGrad!: CanvasGradient;
+		let fogGrad2!: CanvasGradient;
 		function makeFogGrad() {
 			fogGrad = ctx.createLinearGradient(0, VH * 0.65, 0, VH * 0.72);
 			fogGrad.addColorStop(0, 'rgba(6,4,10,0)');
 			fogGrad.addColorStop(1, 'rgba(6,4,10,0.20)');
+			const scrollFogY = VH * 1.08;
+			fogGrad2 = ctx.createLinearGradient(0, scrollFogY, 0, scrollFogY + VH * 0.06);
+			fogGrad2.addColorStop(0, 'rgba(6,4,10,0)');
+			fogGrad2.addColorStop(1, 'rgba(6,4,10,0.18)');
 		}
 
 		// Render static city elements (silhouettes + outlines + antennas) to the two
@@ -181,12 +212,14 @@
 		function renderCityStatic() {
 			cctx0.clearRect(0, 0, W, H);
 			cctx1.clearRect(0, 0, W, H);
+			cctx2.clearRect(0, 0, W, H);
+			cctx3.clearRect(0, 0, W, H);
 
 			for (const b of buildings) {
-				const sc    = b.layer === 0 ? cctx0 : cctx1;
-				const alpha = b.layer === 0 ? 0.32 : 0.65;
-				const blur  = b.layer === 0 ? 5 : 10;
-				const lw    = b.layer === 0 ? 0.7 : 1.1;
+				const sc    = b.layer === 0 ? cctx0 : b.layer === 1 ? cctx1 : b.layer === 2 ? cctx2 : cctx3;
+				const alpha = b.layer === 0 ? 0.32 : b.layer === 1 ? 0.65 : b.layer === 2 ? 0.22 : 0.52;
+				const blur  = b.layer === 0 ? 5 : b.layer === 1 ? 10 : b.layer === 2 ? 4 : 9;
+				const lw    = b.layer === 0 ? 0.7 : b.layer === 1 ? 1.1 : b.layer === 2 ? 0.6 : 1.0;
 				const col   = `hsl(${b.hue},100%,58%)`;
 
 				// Silhouette — extends to canvas bottom so scrolling reveals nothing behind
@@ -248,20 +281,25 @@
 
 		function buildCity() {
 			buildings = [];
-			for (let layer = 0; layer < 2; layer++) {
-				const maxH = layer === 0 ? VH * 0.20 : VH * 0.30;
-				const minH = layer === 0 ? VH * 0.07 : VH * 0.10;
-				const wMin = layer === 0 ? 22 : 28;
-				const wMax = layer === 0 ? 55 : 95;
-				const wSize = layer === 0 ? 3 : 4;
-				const wGap = layer === 0 ? 7 : 10;
+
+			// layer config: [maxH%, minH%, wMin, wMax, wSize, wGap, baseline]
+			const configs = [
+				[0.13, 0.05, 22, 55,  3, 7,  VH],
+				[0.20, 0.07, 28, 95,  4, 10, VH],
+				[0.10, 0.03, 18, 45,  2, 6,  VH * 1.15],  // scroll bg
+				[0.18, 0.06, 26, 85,  4, 10, VH * 1.15],  // scroll fg
+			] as const;
+
+			for (let layer = 0; layer < 4; layer++) {
+				const [maxHr, minHr, wMin, wMax, wSize, wGap, baseline] = configs[layer];
+				const maxH = VH * maxHr, minH = VH * minHr;
 				const pad = 7;
 				let x = -15;
 
 				while (x < W + 20) {
 					const w = wMin + Math.random() * (wMax - wMin);
 					const h = minH + Math.random() * (maxH - minH);
-					const top = VH - h;
+					const top = baseline - h;
 					const hue = PALETTE[Math.floor(Math.random() * PALETTE.length)];
 					const wins: Win[] = [];
 
@@ -272,7 +310,7 @@
 								x: wx, y: wy, size: wSize,
 								alpha: initAlpha, target: initAlpha,
 								timer: Math.floor(Math.random() * 500),
-								hue: hue + (Math.random() - 0.5) * 50,
+								hue: PALETTE[Math.floor(Math.random() * PALETTE.length)],
 							});
 						}
 					}
@@ -282,12 +320,15 @@
 						antenna: layer === 1 && Math.random() < 0.4,
 						antennaH: 10 + Math.random() * 22,
 					});
-					x += w - (layer === 0 ? 4 : 6);
+					x += w - (layer === 0 ? 4 : layer === 1 ? 6 : layer === 2 ? 3 : 5);
 				}
 			}
+
 			buildings.sort((a, b) => a.layer - b.layer);
 			layer0Bldgs = buildings.filter(b => b.layer === 0);
 			layer1Bldgs = buildings.filter(b => b.layer === 1);
+			layer2Bldgs = buildings.filter(b => b.layer === 2);
+			layer3Bldgs = buildings.filter(b => b.layer === 3);
 			renderCityStatic();
 			makeFogGrad();
 		}
@@ -315,6 +356,22 @@
 		}
 
 		function drawCity() {
+			// Scroll-depth background (drawn first, furthest back)
+			ctx.globalAlpha = 1;
+			ctx.drawImage(cityL2, 0, 0);
+			drawWindowsForLayer(layer2Bldgs, 0.22);
+			ctx.globalAlpha = 1;
+
+			// Scroll-layer horizon fog
+			ctx.fillStyle = fogGrad2;
+			ctx.fillRect(0, VH * 1.08, W, VH * 0.1);
+
+			// Scroll-depth foreground (drawn on top of bg layer)
+			ctx.globalAlpha = 1;
+			ctx.drawImage(cityL3, 0, 0);
+			drawWindowsForLayer(layer3Bldgs, 0.52);
+			ctx.globalAlpha = 1;
+
 			// Layer 0 (background): blit pre-rendered static, then windows
 			ctx.globalAlpha = 1;
 			ctx.drawImage(cityL0, 0, 0);
@@ -327,7 +384,7 @@
 			drawWindowsForLayer(layer1Bldgs, 0.65);
 			ctx.globalAlpha = 1;
 
-			// Horizon fog
+			// Horizon fog (main city)
 			ctx.fillStyle = fogGrad;
 			ctx.fillRect(0, VH * 0.65, W, VH * 0.35);
 
@@ -350,29 +407,33 @@
 			const pulse  = 0.5 + 0.5 * Math.sin(frame * 0.009);
 			const pulse2 = 0.5 + 0.5 * Math.sin(frame * 0.0055 + 1.3);
 			const cx = W / 2;
-			const cy = VH * 0.82;
+			// Parallax: sun moves at 30% of scroll speed relative to viewport.
+			// canvas_y = VH*0.82 + scrollY*0.7 achieves this.
+			const cy = VH * 0.82 + window.scrollY * 0.7;
 			const R  = Math.min(W * 0.72, VH * 0.56);
 
-			// Atmospheric haze on main canvas
+			// Atmospheric haze — extends below cy so there's no hard cutoff
 			const atm = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 2.8);
 			atm.addColorStop(0,    `hsla(336, 100%, 55%, ${0.13 + 0.05 * pulse})`);
 			atm.addColorStop(0.28, `hsla(285, 100%, 48%, ${0.09 + 0.04 * pulse2})`);
 			atm.addColorStop(0.65, `hsla(270, 100%, 38%, 0.03)`);
 			atm.addColorStop(1,    `rgba(0,0,0,0)`);
 			ctx.fillStyle = atm;
-			ctx.fillRect(0, cy - R * 2.8, W, R * 2.8);
+			ctx.fillRect(0, cy - R * 2.8, W, R * 3.4); // extend 0.6R below cy
 
 			// Draw sun disc + stripes on offscreen canvas
 			sctx.clearRect(0, 0, W, H);
 
-			const body = sctx.createLinearGradient(cx, cy - R, cx, cy);
+			// Body gradient extends below cy, fading to transparent
+			const body = sctx.createLinearGradient(cx, cy - R, cx, cy + R * 0.18);
 			body.addColorStop(0,    `rgba(255, 245, 160, ${0.75 + 0.08 * pulse})`);
 			body.addColorStop(0.15, `rgba(255, 100, 180, 0.82)`);
 			body.addColorStop(0.45, `rgba(180,   0, 255, 0.84)`);
 			body.addColorStop(0.78, `rgba(80,    0, 200, 0.78)`);
-			body.addColorStop(1,    `rgba(30,    0, 120, 0.65)`);
+			body.addColorStop(0.90, `rgba(30,    0, 120, 0.65)`);
+			body.addColorStop(1,    `rgba(20,    0,  80, 0)`);
 			sctx.fillStyle = body;
-			sctx.fillRect(cx - R - 1, cy - R - 1, R * 2 + 2, R + 2);
+			sctx.fillRect(cx - R - 1, cy - R - 1, R * 2 + 2, R + 2 + R * 0.18);
 
 			sctx.fillStyle = 'rgba(6,4,10,0.96)';
 			const drift = (frame * 0.012) % 1;
@@ -385,17 +446,33 @@
 				sctx.fillRect(cx - R - 1, y - thickness * 0.5, R * 2 + 2, thickness);
 			}
 
-			// Soft circular mask
+			// Soft circular mask — extended below cy to allow the body fade
 			sctx.globalCompositeOperation = 'destination-in';
 			const mask = sctx.createRadialGradient(cx, cy, R * 0.68, cx, cy, R * 1.01);
 			mask.addColorStop(0,   'rgba(0,0,0,1)');
 			mask.addColorStop(0.7, 'rgba(0,0,0,1)');
 			mask.addColorStop(1,   'rgba(0,0,0,0)');
 			sctx.fillStyle = mask;
-			sctx.fillRect(cx - R * 1.05, cy - R * 1.05, R * 2.1, R * 1.05);
+			sctx.fillRect(cx - R * 1.05, cy - R * 1.05, R * 2.1, R * 1.25); // was R*1.05 height
 			sctx.globalCompositeOperation = 'source-over';
 
 			ctx.drawImage(sunCanvas, 0, 0);
+
+			// Continuation lines — same drift, perspective-spread from cy to canvas bottom
+			ctx.save();
+			const lineCount = 22;
+			for (let j = 0; j < lineCount; j++) {
+				const tj = (j + drift) / lineCount;
+				const t  = Math.pow(tj, 2.2); // power curve gives perspective spread
+				const y  = cy + (H - cy) * t;
+				const alpha = (1 - tj) * 0.52;
+				const thickness = 0.6 + t * 4;
+				ctx.globalAlpha = alpha;
+				ctx.fillStyle = '#06040a';
+				ctx.fillRect(0, y, W, thickness);
+			}
+			ctx.globalAlpha = 1;
+			ctx.restore();
 		}
 
 		// ── Render loop ──────────────────────────────────────────────────────────
@@ -472,6 +549,8 @@
 			sunCanvas.width = W; sunCanvas.height = H;
 			cityL0.width = W; cityL0.height = H;
 			cityL1.width = W; cityL1.height = H;
+			cityL2.width = W; cityL2.height = H;
+			cityL3.width = W; cityL3.height = H;
 			clearTimeout(resizeTimer);
 			resizeTimer = setTimeout(buildCity, 200);
 		};
@@ -486,6 +565,8 @@
 				sunCanvas.height = H;
 				cityL0.height = H;
 				cityL1.height = H;
+				cityL2.height = H;
+				cityL3.height = H;
 				buildCity();
 			}
 		});
@@ -501,6 +582,11 @@
 		};
 		document.addEventListener('visibilitychange', onVisibilityChange);
 
+		const onScroll = () => {
+			document.documentElement.style.setProperty('--page-scroll', String(window.scrollY));
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+
 		buildCity();
 		draw();
 
@@ -508,6 +594,7 @@
 			cancelAnimationFrame(raf);
 			clearTimeout(resizeTimer);
 			window.removeEventListener('resize', resize);
+			window.removeEventListener('scroll', onScroll);
 			document.removeEventListener('visibilitychange', onVisibilityChange);
 			ro.disconnect();
 		};
@@ -674,6 +761,33 @@
 				{/each}
 			</div>
 		</Block>
+	</div>
+
+	<div class="billboards">
+		{#each billboards as board, i}
+			{@const hue = BILLBOARD_HUES[i % BILLBOARD_HUES.length]}
+			{@const signOffset = ['0rem','0.9rem','0.2rem','1.4rem','0.5rem','1.1rem','0.05rem','0.7rem','1.6rem','0.35rem','1.2rem','0.6rem'][i % 12]}
+			{@const pf = [0.06, 0.11, 0.04, 0.13, 0.08, 0.10, 0.03, 0.12, 0.05, 0.09, 0.14, 0.07][i % 12]}
+			<div class="billboard" style="--hue:{hue};--sign-offset:{signOffset};--pf:{pf}">
+				<svelte:element
+					this={board.link ? 'a' : 'div'}
+					class="billboard-face"
+					href={board.link ?? undefined}
+					target={board.link && !board.link.startsWith('/') ? '_blank' : undefined}
+					rel={board.link ? 'noopener noreferrer' : undefined}
+				>
+					{#if board.image}
+						<img src={board.image} alt={board.text ?? ''} class="billboard-img" />
+					{:else}
+						<span class="billboard-text">{board.text}</span>
+					{/if}
+				</svelte:element>
+				<div class="billboard-legs">
+					<span class="billboard-leg"></span>
+					<span class="billboard-leg"></span>
+				</div>
+			</div>
+		{/each}
 	</div>
 
 
