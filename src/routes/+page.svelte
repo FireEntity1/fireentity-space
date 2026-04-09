@@ -118,6 +118,7 @@
 		canvas.height = H;
 
 		const isMobile = W <= 768;
+		const MOBILE_FRAME_MS = isMobile ? 1000 / 30 : 0;
 
 		// ── Streaks ─────────────────────────────────────────────────────────────
 		// Fewer streaks on mobile; no glowing streaks on mobile (they require expensive
@@ -148,7 +149,7 @@
 				length, angle,
 				width: 0.4 + Math.random() * 1.2,
 				opacity: 0.2 + Math.random() * 0.65,
-				glowing: isMobile ? false : Math.random() < 0.35,
+				glowing: isMobile ? false : Math.random() < 0.18,
 				shimmer: Math.random() * Math.PI * 2,
 				shimmerSpeed: 0.08 + Math.random() * 0.18,
 			};
@@ -201,6 +202,16 @@
 		// Fog gradients — cached between resizes.
 		let fogGrad!: CanvasGradient;
 		let fogGrad2!: CanvasGradient;
+		let bottomFade!: CanvasGradient;
+
+		// Cached scroll position — updated by scroll handler, read in draw loop
+		// to avoid forcing a layout flush inside rAF via window.scrollY.
+		let cachedScrollY = 0;
+		let lastFrameTime = -1000;
+
+		// Cached atmospheric gradient — recreated only when sun cy changes.
+		let lastSunCy = -1;
+		let cachedAtm!: CanvasGradient;
 		function makeFogGrad() {
 			fogGrad = ctx.createLinearGradient(0, VH * 0.65, 0, VH * 0.72);
 			fogGrad.addColorStop(0, 'rgba(6,4,10,0)');
@@ -209,6 +220,12 @@
 			fogGrad2 = ctx.createLinearGradient(0, scrollFogY, 0, scrollFogY + VH * 0.06);
 			fogGrad2.addColorStop(0, 'rgba(6,4,10,0)');
 			fogGrad2.addColorStop(1, 'rgba(6,4,10,0.18)');
+			// Cache bottom fade — same geometry across frames, only changes on resize.
+			bottomFade = ctx.createLinearGradient(0, H - VH * 0.4, 0, H);
+			bottomFade.addColorStop(0, 'rgba(6,4,10,0)');
+			bottomFade.addColorStop(1, 'rgba(6,4,10,1)');
+			// Force atm gradient rebuild after resize.
+			lastSunCy = -1;
 		}
 
 		// Render static city elements (silhouettes + outlines + antennas) to the two
@@ -338,9 +355,8 @@
 			makeFogGrad();
 		}
 
-		// Draw animated windows for one depth layer. No shadowBlur — windows are tiny
-		// bright pixels on a dark background; the contrast alone reads as glowing.
-		function drawWindowsForLayer(bldgs: Bldg[], alpha: number) {
+		// Update window alpha state — called every 3rd frame to reduce iteration cost.
+		function updateWindows(bldgs: Bldg[]) {
 			for (const b of bldgs) {
 				for (const win of b.wins) {
 					win.timer--;
@@ -352,6 +368,15 @@
 							: 180 + Math.floor(Math.random() * 480);
 					}
 					win.alpha += (win.target - win.alpha) * 0.04;
+				}
+			}
+		}
+
+		// Draw animated windows for one depth layer. No shadowBlur — windows are tiny
+		// bright pixels on a dark background; the contrast alone reads as glowing.
+		function drawWindowsForLayer(bldgs: Bldg[], alpha: number) {
+			for (const b of bldgs) {
+				for (const win of b.wins) {
 					if (win.alpha < 0.01) continue;
 					ctx.globalAlpha = alpha * win.alpha;
 					ctx.fillStyle = `hsl(${win.hue},100%,75%)`;
@@ -393,10 +418,7 @@
 			ctx.fillStyle = fogGrad;
 			ctx.fillRect(0, VH * 0.65, W, VH * 0.35);
 
-			// Fade to black at the very bottom of the canvas
-			const bottomFade = ctx.createLinearGradient(0, H - VH * 0.4, 0, H);
-			bottomFade.addColorStop(0, 'rgba(6,4,10,0)');
-			bottomFade.addColorStop(1, 'rgba(6,4,10,1)');
+			// Fade to black at the very bottom of the canvas (gradient cached in makeFogGrad)
 			ctx.fillStyle = bottomFade;
 			ctx.fillRect(0, H - VH * 0.4, W, VH * 0.4);
 		}
@@ -410,26 +432,29 @@
 
 		function drawSun() {
 			const pulse  = 0.5 + 0.5 * Math.sin(frame * 0.009);
-			const pulse2 = 0.5 + 0.5 * Math.sin(frame * 0.0055 + 1.3);
 			const cx = W / 2;
 			// Parallax: sun moves at 30% of scroll speed relative to viewport.
 			// canvas_y = VH*0.82 + scrollY*0.7 achieves this.
-			const cy = VH * 0.82 + window.scrollY * 0.7;
+			// Use cachedScrollY (set by scroll handler) to avoid a layout flush inside rAF.
+			const cy = VH * 0.82 + cachedScrollY * 0.7;
 			const R  = Math.min(W * 0.72, VH * 0.56);
 
-			// Atmospheric haze — extends below cy so there's no hard cutoff
-			const atm = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 2.8);
-			atm.addColorStop(0,    `hsla(336, 100%, 55%, ${0.13 + 0.05 * pulse})`);
-			atm.addColorStop(0.28, `hsla(285, 100%, 48%, ${0.09 + 0.04 * pulse2})`);
-			atm.addColorStop(0.65, `hsla(270, 100%, 38%, 0.03)`);
-			atm.addColorStop(1,    `rgba(0,0,0,0)`);
-			ctx.fillStyle = atm;
-			ctx.fillRect(0, cy - R * 2.8, W, R * 3.4); // extend 0.6R below cy
+			// Atmospheric haze — rebuild gradient only when sun position changes (scroll-driven).
+			// Pulse alpha variation is imperceptible; fixed midpoint values used instead.
+			if (cy !== lastSunCy) {
+				lastSunCy = cy;
+				cachedAtm = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 2.8);
+				cachedAtm.addColorStop(0,    'hsla(336, 100%, 55%, 0.155)');
+				cachedAtm.addColorStop(0.28, 'hsla(285, 100%, 48%, 0.110)');
+				cachedAtm.addColorStop(0.65, 'hsla(270, 100%, 38%, 0.030)');
+				cachedAtm.addColorStop(1,    'rgba(0,0,0,0)');
+			}
+			ctx.fillStyle = cachedAtm;
+			ctx.fillRect(0, cy - R * 2.8, W, R * 3.4);
 
 			// Draw sun disc + stripes on offscreen canvas
 			sctx.clearRect(0, 0, W, H);
 
-			// Body gradient extends below cy, fading to transparent
 			const body = sctx.createLinearGradient(cx, cy - R, cx, cy + R * 0.18);
 			body.addColorStop(0,    `rgba(255, 245, 160, ${0.75 + 0.08 * pulse})`);
 			body.addColorStop(0.15, `rgba(255, 100, 180, 0.82)`);
@@ -441,34 +466,34 @@
 			sctx.fillRect(cx - R - 1, cy - R - 1, R * 2 + 2, R + 2 + R * 0.18);
 
 			sctx.fillStyle = 'rgba(6,4,10,0.96)';
-			const drift = (frame * 0.012) % 1;
+			const discDrift = (frame * 0.006) % 1;
 			const N = 10;
 			for (let i = 0; i < N; i++) {
-				const ti = (i + drift) / N;
+				const ti = (i + discDrift) / N;
 				const t  = 1 - Math.pow(1 - ti, 2.6);
 				const y  = cy - R * (1 - t);
 				const thickness = Math.max(1.5, (1 - t) * 12 + 1.5);
 				sctx.fillRect(cx - R - 1, y - thickness * 0.5, R * 2 + 2, thickness);
 			}
 
-			// Soft circular mask — extended below cy to allow the body fade
 			sctx.globalCompositeOperation = 'destination-in';
 			const mask = sctx.createRadialGradient(cx, cy, R * 0.68, cx, cy, R * 1.01);
 			mask.addColorStop(0,   'rgba(0,0,0,1)');
 			mask.addColorStop(0.7, 'rgba(0,0,0,1)');
 			mask.addColorStop(1,   'rgba(0,0,0,0)');
 			sctx.fillStyle = mask;
-			sctx.fillRect(cx - R * 1.05, cy - R * 1.05, R * 2.1, R * 1.25); // was R*1.05 height
+			sctx.fillRect(cx - R * 1.05, cy - R * 1.05, R * 2.1, R * 1.25);
 			sctx.globalCompositeOperation = 'source-over';
 
 			ctx.drawImage(sunCanvas, 0, 0);
 
-			// Continuation lines — same drift, perspective-spread from cy to canvas bottom
+			// Continuation lines — smooth every frame (these are the most visible stripes)
 			ctx.save();
+			const drift = (frame * 0.006) % 1;
 			const lineCount = 22;
 			for (let j = 0; j < lineCount; j++) {
 				const tj = (j + drift) / lineCount;
-				const t  = Math.pow(tj, 2.2); // power curve gives perspective spread
+				const t  = Math.pow(tj, 2.2);
 				const y  = cy + (H - cy) * t;
 				const alpha = (1 - tj) * 0.52;
 				const thickness = 0.6 + t * 4;
@@ -483,9 +508,25 @@
 		// ── Render loop ──────────────────────────────────────────────────────────
 		let raf: number;
 
-		function draw() {
+		function draw(ts: number = 0) {
+			// On mobile, cap to 30fps to cut CPU/GPU work in half.
+			if (isMobile && ts > 0 && ts - lastFrameTime < MOBILE_FRAME_MS) {
+				raf = requestAnimationFrame(draw);
+				return;
+			}
+			lastFrameTime = ts;
+
 			ctx.clearRect(0, 0, W, H);
 			frame++;
+
+			// Window state updates are throttled — alpha lerp is slow enough that
+			// every 3rd frame is visually identical to every frame.
+			if (frame % 3 === 0) {
+				updateWindows(layer0Bldgs);
+				updateWindows(layer1Bldgs);
+				updateWindows(layer2Bldgs);
+				updateWindows(layer3Bldgs);
+			}
 
 			// Sun (furthest back)
 			drawSun();
@@ -588,7 +629,8 @@
 		document.addEventListener('visibilitychange', onVisibilityChange);
 
 		const onScroll = () => {
-			document.documentElement.style.setProperty('--page-scroll', String(window.scrollY));
+			cachedScrollY = window.scrollY;
+			document.documentElement.style.setProperty('--page-scroll', String(cachedScrollY));
 		};
 		window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -660,7 +702,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<canvas bind:this={canvas} style="position:absolute;top:0;left:0;pointer-events:none;z-index:0;"></canvas>
+<canvas bind:this={canvas} style="position:absolute;top:0;left:0;pointer-events:none;z-index:0;will-change:transform;"></canvas>
 
 <div class="terminal" style="position:relative;z-index:1;">
 	<header class="topbar">

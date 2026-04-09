@@ -45,8 +45,8 @@
 		border: 1px solid rgba(var(--c), 0.35);
 		padding: 1.25rem 1rem 1rem;
 		background: linear-gradient(rgba(var(--c), 0.025), rgba(var(--c), 0.025)) rgba(6,4,10,0.78);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
 		box-shadow:
 			0 0 10px rgba(var(--c), 0.18),
 			inset 0 0 12px rgba(var(--c), 0.015);

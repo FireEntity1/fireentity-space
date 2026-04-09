@@ -39,6 +39,6 @@ declare module "$app/types" {
 		};
 		Pathname(): "/" | "/admin";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
-		Asset(): "/88x31/shuflduf.gif" | "/robots.txt" | string & {};
+		Asset(): "/88x31/fireentity.gif" | "/88x31/shuflduf.gif" | "/robots.txt" | string & {};
 	}
 }

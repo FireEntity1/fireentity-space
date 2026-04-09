@@ -70,6 +70,7 @@
 		gap: 1.25rem;
 		padding: 1.5rem;
 		align-content: start;
+		contain: layout style;
 	}
 
 	.kv {
@@ -405,9 +406,8 @@
 			hsl(var(--hue), 85%, 48%) 30%,
 			transparent 65%
 		);
-		filter:
-			drop-shadow(0 0 2px hsl(var(--hue), 100%, 72%))
-			drop-shadow(0 0 7px hsla(var(--hue), 100%, 55%, 0.55));
+		/* box-shadow is GPU-composited without a separate layer per element */
+		box-shadow: 0 0 3px hsl(var(--hue), 100%, 72%), 0 0 8px hsla(var(--hue), 100%, 55%, 0.5);
 	}
 
 	@keyframes gradient-scroll {
