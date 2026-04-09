@@ -34,8 +34,10 @@
 	let online = $state(true);
 
 	const links = [
-		{ label: 'gh', href: 'https://github.com/fireentity1', display: 'fireentity1' },
-		{ label: 'em', href: 'mailto:hi@fireentity.space', display: 'hi@fireentity.space' }
+		{ label: 'github', href: 'https://github.com/fireentity1', display: 'fireentity1' },
+		{ label: 'email', href: 'mailto:hi@fireentity.space', display: 'hi@fireentity.space' },
+		{ label: 'itch', href: 'https://fire-entity.itch.io/', display: 'fire-entity' },
+		{ label: 'beatleader', href: 'https://beatleader.com/u/fireentity', display: 'fireentity' },
 	];
 
 	Promise.all([
@@ -79,6 +81,9 @@
 	const billboards: Billboard[] = [
 		{ text: 'shuflduf.xyz', link: 'https://shuflduf.xyz', image: '/88x31/shuflduf.gif' },
 		{ text: 'LIGHT//BOUND — IN DEV', link: 'https://github.com/fireentity1/beat-jumper' },
+		{ text: 'fireentity.space', link: 'https://fireentity.space', image: '/88x31/fireentity.gif' },
+		{ text: 'addy10s.xyz', link: 'https://addy10s.xyz', image: 'https://www.addy10s.xyz/addy88x31.gif'},
+		{ text: 'nibblz.xyz', link: 'https://nibblz.xyz' }
 	];
 
 	const PANEL_COUNT = 5;
@@ -108,7 +113,7 @@
 		const ctx = canvas.getContext('2d')!;
 		let W = window.innerWidth;
 		let VH = window.innerHeight; // viewport height — for sizing sun, buildings, fog
-		let H = Math.max(VH, document.documentElement.scrollHeight); // full page height — canvas size + city position
+		let H = Math.max(VH, document.documentElement.scrollHeight); // full page height
 		canvas.width = W;
 		canvas.height = H;
 
@@ -766,7 +771,7 @@
 	<div class="billboards">
 		{#each billboards as board, i}
 			{@const hue = BILLBOARD_HUES[i % BILLBOARD_HUES.length]}
-			{@const signOffset = ['0rem','0.9rem','0.2rem','1.4rem','0.5rem','1.1rem','0.05rem','0.7rem','1.6rem','0.35rem','1.2rem','0.6rem'][i % 12]}
+			{@const signOffset = ['0rem','0.9rem','-0.4rem','1.5rem','0.2rem','-0.7rem','1.1rem','-0.2rem','0.6rem','1.8rem','-0.5rem','0.4rem'][i % 12]}
 			{@const pf = [0.06, 0.11, 0.04, 0.13, 0.08, 0.10, 0.03, 0.12, 0.05, 0.09, 0.14, 0.07][i % 12]}
 			<div class="billboard" style="--hue:{hue};--sign-offset:{signOffset};--pf:{pf}">
 				<svelte:element

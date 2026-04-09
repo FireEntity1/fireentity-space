@@ -73,7 +73,7 @@
 		padding: 0 0.35rem;
 		background: #070608;
 		font-family: var(--font-mono);
-		font-size: 0.72rem;
+		font-size: 0.82rem;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: rgba(var(--c), 0.9);
@@ -93,10 +93,10 @@
 
 	.panel-body {
 		font-family: var(--font-mono);
-		font-size: 0.86rem;
-		line-height: 1.8;
-		color: rgba(216, 208, 196, 0.92);
-		text-shadow: 0 0 8px rgba(216, 208, 196, 0.22);
+		font-size: 0.9rem;
+		line-height: 1.85;
+		color: rgba(216, 208, 196, 0.95);
+		text-shadow: 0 0 8px rgba(216, 208, 196, 0.18);
 		min-height: 3.5rem;
 	}
 
