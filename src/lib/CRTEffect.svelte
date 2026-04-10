@@ -15,7 +15,7 @@
 		position: relative;
 		width: 100%;
 		min-height: 100dvh;
-		/* animation: crt-aberration 20s infinite; */
+		animation: crt-aberration 20s infinite;
 	}
 
 	/* Scanlines — visible CRT phosphor lines */

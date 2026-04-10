@@ -56,6 +56,20 @@
 			box-shadow 0.2s;
 	}
 
+	/* Bottom-right corner accent bracket */
+	.panel::after {
+		content: '';
+		position: absolute;
+		bottom: 5px;
+		right: 5px;
+		width: 8px;
+		height: 8px;
+		border-bottom: 1px solid rgba(var(--c), 0.3);
+		border-right: 1px solid rgba(var(--c), 0.3);
+		transition: border-color 0.2s;
+		pointer-events: none;
+	}
+
 	.panel:hover,
 	.panel.active {
 		border-color: rgba(var(--c), 0.65);
@@ -64,6 +78,11 @@
 			0 0 14px rgba(var(--c), 0.22),
 			0 0 40px rgba(var(--c), 0.1),
 			inset 0 0 30px rgba(var(--c), 0.04);
+	}
+
+	.panel:hover::after,
+	.panel.active::after {
+		border-color: rgba(var(--c), 0.65);
 	}
 
 	.panel-title {

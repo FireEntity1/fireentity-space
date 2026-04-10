@@ -49,7 +49,8 @@
 		padding: 0.38rem 0.5rem;
 		text-decoration: none;
 		border-bottom: 1px solid rgba(255, 200, 50, 0.055);
-		transition: background 0.1s;
+		border-left: 2px solid transparent;
+		transition: background 0.12s, border-left-color 0.12s;
 		cursor: default;
 	}
 
@@ -60,6 +61,7 @@
 	.song-row:hover,
 	.song-row.active {
 		background: rgba(232, 33, 42, 0.065);
+		border-left-color: rgba(232, 33, 42, 0.55);
 	}
 
 	.song-row:hover .cur,

@@ -32,6 +32,7 @@
 	let songs = $state<SongEntry[]>([]);
 	let projects = $state<Project[]>([]);
 	let online = $state(true);
+	let loading = $state(true);
 
 	const links = [
 		{ label: 'github', href: 'https://github.com/fireentity1', display: 'fireentity1' },
@@ -61,13 +62,15 @@
 		}));
 	}).catch(() => {
 		online = false;
+	}).finally(() => {
+		loading = false;
 	});
 
 	var status = {
 		'currently': 'LIGHT//BOUND',
 		'focus': 'school',
 		'status': 'locked in',
-		'status_active': false
+		'status_active': true
 	}
 
 	interface Billboard {
@@ -83,7 +86,8 @@
 		{ text: 'LIGHT//BOUND — IN DEV', link: 'https://github.com/fireentity1/beat-jumper' },
 		{ text: 'fireentity.space', link: 'https://fireentity.space', image: '/88x31/fireentity.gif' },
 		{ text: 'addy10s.xyz', link: 'https://addy10s.xyz', image: 'https://www.addy10s.xyz/addy88x31.gif'},
-		{ text: 'nibblz.xyz', link: 'https://nibblz.xyz' }
+		{ text: 'nibblz.xyz', link: 'https://nibblz.xyz' },
+		{ text: 'errorcodezero.dev', link: 'https://errorcodezero.dev', image: 'https://www.errorcodezero.dev/button.gif' },
 	];
 
 	const PANEL_COUNT = 5;
@@ -741,37 +745,41 @@
 		</Block>
 
 		<Block title="projects" colspan={2} active={focusedPanel === 2}>
-			<div class="proj-head row-cols">
-				<span>name</span>
-				<span>stack</span>
-				<span>progress</span>
-				<span>status</span>
-				<span></span>
-			</div>
-			{#each projects as proj, i (proj.name)}
-				<div class="proj-row row-cols" class:item-active={focusedPanel === 2 && focusedItem === i}>
-					<span class="proj-name">{proj.name}</span>
-					<span class="proj-stack">{proj.stack}</span>
-					<span class="proj-bar">{'█'.repeat(proj.progress)}{'░'.repeat(10 - proj.progress)}</span>
-					<span class="proj-status">{proj.status}</span>
-					<span class="proj-links">
-						{#if proj.github}
-							<a class="proj-link" href={proj.github} target="_blank" rel="noopener noreferrer" title="GitHub">
-								<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-							</a>
-						{:else}
-							<span class="proj-link proj-link-empty"></span>
-						{/if}
-						{#if proj.url}
-							<a class="proj-link" href={proj.url} target="_blank" rel="noopener noreferrer" title="Live site">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-							</a>
-						{:else}
-							<span class="proj-link proj-link-empty"></span>
-						{/if}
-					</span>
+			{#if loading}
+				<span class="loading">loading...</span>
+			{:else}
+				<div class="proj-head row-cols">
+					<span>name</span>
+					<span>stack</span>
+					<span>progress</span>
+					<span>status</span>
+					<span></span>
 				</div>
-			{/each}
+				{#each projects as proj, i (proj.name)}
+					<div class="proj-row row-cols" class:item-active={focusedPanel === 2 && focusedItem === i}>
+						<span class="proj-name">{proj.name}</span>
+						<span class="proj-stack">{proj.stack}</span>
+						<span class="proj-bar">{'█'.repeat(proj.progress)}{'░'.repeat(10 - proj.progress)}</span>
+						<span class="proj-status">{proj.status}</span>
+						<span class="proj-links">
+							{#if proj.github}
+								<a class="proj-link" href={proj.github} target="_blank" rel="noopener noreferrer" title="GitHub">
+									<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+								</a>
+							{:else}
+								<span class="proj-link proj-link-empty"></span>
+							{/if}
+							{#if proj.url}
+								<a class="proj-link" href={proj.url} target="_blank" rel="noopener noreferrer" title="Live site">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+								</a>
+							{:else}
+								<span class="proj-link proj-link-empty"></span>
+							{/if}
+						</span>
+					</div>
+				{/each}
+			{/if}
 		</Block>
 
 		<Block title="links" active={focusedPanel === 3}>
@@ -780,7 +788,7 @@
 					<li class:item-active={focusedPanel === 3 && focusedItem === i}>
 						<span class="lk-label">{link.label}</span>
 						<span class="lk-arr">→</span>
-						<a class="lk-val" class:lk-link={link.href.startsWith('mailto:')} href={link.href}>{link.display}</a>
+						<a class="lk-val lk-link" href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}>{link.display}</a>
 					</li>
 				{/each}
 			</ul>
@@ -788,24 +796,28 @@
 
 		<Block title="my songs" colspan={3} active={focusedPanel === 4}>
 			<div class="songs-wrap">
-				<div class="songs-head">
-					<span></span>
-					<span>#</span>
-					<span>title</span>
-					<span>info</span>
-					<span>time</span>
-				</div>
-				{#each songs as song, i (i)}
-					<Song
-						index={i + 1}
-						title={song.title}
-						info={song.info}
-						album={song.album}
-						duration={song.duration}
-						href={song.href}
-						active={focusedPanel === 4 && focusedItem === i}
-					/>
-				{/each}
+				{#if loading}
+					<span class="loading">loading tracks...</span>
+				{:else}
+					<div class="songs-head">
+						<span></span>
+						<span>#</span>
+						<span>title</span>
+						<span>info</span>
+						<span>time</span>
+					</div>
+					{#each songs as song, i (i)}
+						<Song
+							index={i + 1}
+							title={song.title}
+							info={song.info}
+							album={song.album}
+							duration={song.duration}
+							href={song.href}
+							active={focusedPanel === 4 && focusedItem === i}
+						/>
+					{/each}
+				{/if}
 			</div>
 		</Block>
 	</div>
@@ -838,7 +850,7 @@
 	</div>
 
 
-	<!-- <footer class="statusbar">
+	<footer class="statusbar">
 		<div class="hints">
 			<span class="hint"><kbd>j</kbd><kbd>k</kbd>/<kbd>←</kbd><kbd>→</kbd> navigate</span>
 			{#if hasItems}
@@ -851,5 +863,5 @@
 			<span class="hint"><kbd>esc</kbd> reset</span>
 		</div>
 		<span class="mode">{focusedItem >= 0 ? 'SELECT' : focusedPanel >= 0 ? 'FOCUSED' : 'MOUSE'}</span>
-	</footer> -->
+	</footer>
 </div>
