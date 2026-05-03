@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <link rel="stylesheet" href="index.css">
@@ -11,14 +10,9 @@
     <title>fireentity.space</title>
 </head>
 <body>
-    <h1 class="font">fireentity.space</h1>
-    <p class="tektur">Welcome to my site!</p>
-    <div class="container">
-    <?php for ($i = 0; $i < 5; $i++) { ?>
-        <?php for ($j = 0; $j < $i; $j++) { ?>
-            <?php include "box.php"; ?>
-        <?php } ?>
-    <?php } ?>
-</div>
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
