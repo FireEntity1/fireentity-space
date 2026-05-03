@@ -1,0 +1,52 @@
+html {
+    background-color: black;
+    color: white;
+}
+
+h1 {
+    text-align: center;
+    margin: 0.4em;
+    font-size: 10vw;
+    font-family: "Kalnia Glaze", serif;
+}
+
+.font {
+    font-family: "Kalnia Glaze", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings: "wdth" 102.2;
+}
+
+.tektur {
+    font-family: "Tektur", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 100;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+}
+
+p {
+    text-align: center;
+    margin: 0.4em;
+    font-size: 1.5em;
+    font-family: "Tektur", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 100;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+}
+
+.box {
+    border: 1px solid white;
+    border-radius: 3em;
+    width: 20em;
+    height: 20em;
+    margin: 1em;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
