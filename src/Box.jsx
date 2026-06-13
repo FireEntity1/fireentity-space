@@ -49,12 +49,14 @@ const Box = ({
   eyebrow,
   meta,
   featured = false,
+  index = 0,
 }) => {
   const imageClass = `image-${image_pos}`;
   const cardStyle = {
     "--box-width": `${size[1] * 20}rem`,
     "--box-min-height": `${size[0] * 20}rem`,
     "--box-accent": accent,
+    "--box-index": index,
   };
 
   return (

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import "/src/index.css";
 import Box from "./Box.jsx";
@@ -47,7 +47,77 @@ const projects = [
   },
 ];
 
+const useScrollAnimations = () => {
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (reduceMotion.matches) {
+      return undefined;
+    }
+
+    const root = document.documentElement;
+    let ticking = false;
+    const boxes = document.querySelectorAll(".box");
+
+    const updateScrollVars = () => {
+      const maxScroll = Math.max(root.scrollHeight - window.innerHeight, 1);
+      const progress = window.scrollY / maxScroll;
+
+      root.style.setProperty("--scroll-progress", progress.toFixed(4));
+      root.style.setProperty("--scroll-y", `${window.scrollY.toFixed(1)}px`);
+      ticking = false;
+    };
+
+    const requestScrollUpdate = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScrollVars);
+        ticking = true;
+      }
+    };
+
+    if (!("IntersectionObserver" in window)) {
+      boxes.forEach((box) => box.classList.add("is-visible"));
+      updateScrollVars();
+      window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+      window.addEventListener("resize", requestScrollUpdate);
+
+      return () => {
+        window.removeEventListener("scroll", requestScrollUpdate);
+        window.removeEventListener("resize", requestScrollUpdate);
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        rootMargin: "0px 0px -12% 0px",
+        threshold: 0.18,
+      },
+    );
+
+    boxes.forEach((box) => observer.observe(box));
+    updateScrollVars();
+    window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+    window.addEventListener("resize", requestScrollUpdate);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", requestScrollUpdate);
+      window.removeEventListener("resize", requestScrollUpdate);
+    };
+  }, []);
+};
+
 const App = () => {
+  useScrollAnimations();
+
   return (
     <main>
       <Background />
@@ -66,8 +136,8 @@ const App = () => {
       </section>
 
       <section id="work" className="container" aria-label="Featured work">
-        {projects.map((box) => (
-          <Box key={box.title} {...box} />
+        {projects.map((box, index) => (
+          <Box key={box.title} index={index} {...box} />
         ))}
       </section>
     </main>
