@@ -3,16 +3,198 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="fireentity.space portfolio for rhythm games, electronic releases, and interactive systems."
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Kalnia+Glaze:wdth@102.2&family=Tektur:wght@400..900&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Kalnia+Glaze:wdth@102.2&family=Space+Grotesk:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
+        <link rel="stylesheet" href="/src/index.css" />
         <title>fireentity.space</title>
     </head>
     <body>
-        <div id="root"></div>
-        <script type="module" src="/src/main.jsx"></script>
+        <main class="page-shell">
+            <header class="site-header">
+                <p class="category-label">Music Artist // Developer</p>
+                <h1>fireentity.space</h1>
+                <p class="subtitle">
+                    Rhythm games, electronic releases, and strange interactive
+                    systems.
+                </p>
+            </header>
+
+            <section class="bento-grid" aria-label="Portfolio highlights">
+                <article class="bento-card identity-card">
+                    <figure class="media-frame media-left">
+                        <img src="/pfp.png" alt="Fireentity profile avatar" />
+                    </figure>
+                    <div class="card-content">
+                        <p class="accent-label">01 / Identity</p>
+                        <h2>Fireentity</h2>
+                        <p class="subheading cyan">Sound / Code / Interaction</p>
+                        <p class="body-copy">
+                            Music artist and developer building rhythm games,
+                            electronic releases, and compact web experiments.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="bento-card game-card">
+                    <figure class="media-frame media-top">
+                        <img src="/lightbound.png" alt="LIGHT//BOUND key art" />
+                    </figure>
+                    <div class="card-content">
+                        <p class="accent-label">02 / Game</p>
+                        <h2>LIGHT//BOUND</h2>
+                        <p class="subheading cyan">In development</p>
+                        <p class="body-copy">
+                            A flagship rhythm game shaped around fast lanes,
+                            bright ruins, and precise feedback.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="bento-card release-card">
+                    <div class="card-content">
+                        <p class="accent-label">03 / Release</p>
+                        <h2>FRACTURED ANOMALY</h2>
+                        <p class="subheading muted">Single</p>
+                        <p class="body-copy">
+                            A sharp electronic single with cover art that reads
+                            like a corrupted signal.
+                        </p>
+                    </div>
+                    <figure class="media-frame media-right">
+                        <img
+                            src="/fractured__anomaly.png"
+                            alt="FRACTURED ANOMALY album artwork"
+                        />
+                    </figure>
+                </article>
+
+                <article class="bento-card contact-card">
+                    <div class="card-content">
+                        <p class="accent-label">04 / Contact</p>
+                        <h2>Signal</h2>
+                        <p class="subheading muted">Direct links</p>
+                        <p class="body-copy link-stack">
+                            <a href="mailto:me@fireentity.space">me@fireentity.space</a>
+                            <a href="https://github.com/fireentity1">github.com/fireentity1</a>
+                        </p>
+                    </div>
+                </article>
+            </section>
+        </main>
+        <script type="module">
+            const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+            if (!reduceMotion.matches) {
+                document.querySelectorAll(".bento-card").forEach((card) => {
+                    const maxTilt = 6;
+                    const state = {
+                        active: false,
+                        raf: null,
+                        currentX: 0,
+                        currentY: 0,
+                        currentShineX: 50,
+                        currentShineY: 50,
+                        currentSheen: 0,
+                        currentLift: 0,
+                        targetX: 0,
+                        targetY: 0,
+                        targetShineX: 50,
+                        targetShineY: 50,
+                        targetSheen: 0,
+                        targetLift: 0,
+                    };
+
+                    const render = () => {
+                        const ease = state.active ? 0.16 : 0.11;
+
+                        state.currentX += (state.targetX - state.currentX) * ease;
+                        state.currentY += (state.targetY - state.currentY) * ease;
+                        state.currentShineX += (state.targetShineX - state.currentShineX) * ease;
+                        state.currentShineY += (state.targetShineY - state.currentShineY) * ease;
+                        state.currentSheen += (state.targetSheen - state.currentSheen) * ease;
+                        state.currentLift += (state.targetLift - state.currentLift) * ease;
+
+                        card.style.setProperty("--tilt-x", `${state.currentX.toFixed(3)}deg`);
+                        card.style.setProperty("--tilt-y", `${state.currentY.toFixed(3)}deg`);
+                        card.style.setProperty("--shine-x", `${state.currentShineX.toFixed(2)}%`);
+                        card.style.setProperty("--shine-y", `${state.currentShineY.toFixed(2)}%`);
+                        card.style.setProperty(
+                            "--sheen-opacity",
+                            (0.34 + state.currentSheen * 0.58).toFixed(3),
+                        );
+                        card.style.setProperty("--lift", `${state.currentLift.toFixed(2)}px`);
+                        card.style.setProperty(
+                            "--sheen-angle",
+                            `${(state.currentShineX * 1.8 + state.currentShineY * 0.8).toFixed(2)}deg`,
+                        );
+
+                        const settled =
+                            Math.abs(state.targetX - state.currentX) < 0.01 &&
+                            Math.abs(state.targetY - state.currentY) < 0.01 &&
+                            Math.abs(state.targetShineX - state.currentShineX) < 0.05 &&
+                            Math.abs(state.targetShineY - state.currentShineY) < 0.05 &&
+                            Math.abs(state.targetSheen - state.currentSheen) < 0.01 &&
+                            Math.abs(state.targetLift - state.currentLift) < 0.02;
+
+                        if (!settled) {
+                            state.raf = window.requestAnimationFrame(render);
+                        } else {
+                            state.raf = null;
+                        }
+                    };
+
+                    const start = () => {
+                        if (!state.raf) {
+                            state.raf = window.requestAnimationFrame(render);
+                        }
+                    };
+
+                    card.addEventListener("pointermove", (event) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = (event.clientX - rect.left) / rect.width;
+                        const y = (event.clientY - rect.top) / rect.height;
+                        const clampedX = Math.max(0, Math.min(1, x));
+                        const clampedY = Math.max(0, Math.min(1, y));
+
+                        state.active = true;
+                        state.targetX = (0.5 - clampedY) * maxTilt;
+                        state.targetY = (clampedX - 0.5) * maxTilt;
+                        state.targetShineX = clampedX * 100;
+                        state.targetShineY = clampedY * 100;
+                        state.targetSheen = 1;
+                        state.targetLift = -4;
+                        start();
+                    });
+
+                    const resetCard = () => {
+                        state.active = false;
+                        state.targetX = 0;
+                        state.targetY = 0;
+                        state.targetShineX = 50;
+                        state.targetShineY = 50;
+                        state.targetSheen = 0;
+                        state.targetLift = 0;
+                        start();
+                    };
+
+                    card.addEventListener("pointerenter", () => {
+                        state.active = true;
+                        state.targetSheen = 1;
+                        state.targetLift = -4;
+                        start();
+                    });
+                    card.addEventListener("pointerleave", resetCard);
+                    card.addEventListener("pointercancel", resetCard);
+                });
+            }
+        </script>
     </body>
 </html>
