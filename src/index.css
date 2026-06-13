@@ -126,7 +126,7 @@ h1 {
     --tilt-y: 0deg;
     --shine-x: 50%;
     --shine-y: 50%;
-    --sheen-opacity: 0.34;
+    --sheen-opacity: 0.28;
     --sheen-angle: 135deg;
     --lift: 0px;
     position: relative;
@@ -166,18 +166,23 @@ h1 {
     border-radius: inherit;
     border: 1px solid rgba(255, 255, 255, 0.026);
     background:
-        linear-gradient(var(--sheen-angle), transparent 18%, rgba(255, 255, 255, 0.2) 39%, transparent 52%),
+        radial-gradient(
+            ellipse 92% 72% at var(--shine-x) var(--shine-y),
+            rgba(255, 255, 255, 0.095),
+            rgba(255, 255, 255, 0.034) 24%,
+            transparent 58%
+        ),
         conic-gradient(
             from var(--sheen-angle) at var(--shine-x) var(--shine-y),
             transparent 0deg,
-            rgba(249, 168, 212, 0.05) 28deg,
-            rgba(253, 230, 138, 0.1) 72deg,
-            rgba(167, 243, 208, 0.07) 118deg,
-            rgba(147, 197, 253, 0.1) 168deg,
-            rgba(196, 181, 253, 0.08) 228deg,
+            rgba(249, 168, 212, 0.042) 28deg,
+            rgba(253, 230, 138, 0.078) 72deg,
+            rgba(167, 243, 208, 0.055) 118deg,
+            rgba(147, 197, 253, 0.08) 168deg,
+            rgba(196, 181, 253, 0.062) 228deg,
             transparent 292deg
         ),
-        linear-gradient(235deg, rgba(147, 197, 253, 0.028), transparent 42%, rgba(249, 168, 212, 0.022));
+        linear-gradient(235deg, rgba(147, 197, 253, 0.022), transparent 42%, rgba(249, 168, 212, 0.018));
     background-blend-mode: soft-light, screen, screen;
     opacity: var(--sheen-opacity);
     pointer-events: none;
