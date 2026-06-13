@@ -18,16 +18,30 @@
     </head>
     <body>
         <main class="page-shell">
-            <header class="site-header">
-                <p class="category-label">Music Artist // Developer</p>
-                <h1>fireentity.space</h1>
-                <p class="subtitle">
-                    Rhythm games, electronic releases, and strange interactive
-                    systems.
-                </p>
+            <header class="hero" aria-labelledby="page-title">
+                <div class="hero-backdrop" aria-hidden="true">
+                    <span class="hero-fluid-sheet"></span>
+                    <span class="hero-ribbon hero-ribbon-one"></span>
+                    <span class="hero-ribbon hero-ribbon-two"></span>
+                    <span class="hero-stars hero-stars-far"></span>
+                    <span class="hero-stars hero-stars-mid"></span>
+                </div>
+
+                <div class="hero-copy">
+                    <p class="category-label hero-kicker">Music Artist // Developer</p>
+                    <h1 id="page-title" class="hero-title">
+                        <span>fireentity</span><span>.space</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Rhythm games, electronic releases, and strange interactive
+                        systems.
+                    </p>
+                </div>
+
+                <div class="hero-horizon" aria-hidden="true"></div>
             </header>
 
-            <section class="bento-grid" aria-label="Portfolio highlights">
+            <section id="work" class="bento-grid" aria-label="Portfolio highlights">
                 <article class="bento-card identity-card">
                     <figure class="media-frame media-left">
                         <img src="/pfp.png" alt="Fireentity profile avatar" />

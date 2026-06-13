@@ -18,7 +18,6 @@ const renderText = (value) => {
     }
 
     const [, label, href] = match;
-
     parts.push(
       <a
         key={`${match.index}-${href}`}
