@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import "/src/index.css";
 import Box from "./Box.jsx";
-import Background from "./Background.jsx";
 
 const projects = [
   {
@@ -57,7 +56,7 @@ const useScrollAnimations = () => {
 
     const root = document.documentElement;
     let ticking = false;
-    const boxes = document.querySelectorAll(".box");
+    const boxes = document.querySelectorAll(".bento-card");
 
     const updateScrollVars = () => {
       const maxScroll = Math.max(root.scrollHeight - window.innerHeight, 1);
@@ -115,27 +114,138 @@ const useScrollAnimations = () => {
   }, []);
 };
 
+const useBentoInteractions = () => {
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (reduceMotion.matches) {
+      return undefined;
+    }
+
+    const cards = document.querySelectorAll(".bento-card");
+    const cleanups = [];
+
+    cards.forEach((card) => {
+      const maxTilt = 2.8;
+      let frame = 0;
+      let nextStyle = {
+        tiltX: "0deg",
+        tiltY: "0deg",
+        shineX: "50%",
+        shineY: "50%",
+        imageX: "0px",
+        imageY: "0px",
+        angle: "135deg",
+      };
+
+      const applyCardState = () => {
+        frame = 0;
+        card.style.setProperty("--tilt-x", nextStyle.tiltX);
+        card.style.setProperty("--tilt-y", nextStyle.tiltY);
+        card.style.setProperty("--shine-x", nextStyle.shineX);
+        card.style.setProperty("--shine-y", nextStyle.shineY);
+        card.style.setProperty("--image-x", nextStyle.imageX);
+        card.style.setProperty("--image-y", nextStyle.imageY);
+        card.style.setProperty("--sheen-angle", nextStyle.angle);
+      };
+
+      const schedule = () => {
+        if (!frame) {
+          frame = window.requestAnimationFrame(applyCardState);
+        }
+      };
+
+      const handlePointerMove = (event) => {
+        const rect = card.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        const clampedX = Math.max(0, Math.min(1, x));
+        const clampedY = Math.max(0, Math.min(1, y));
+
+        nextStyle = {
+          tiltX: `${((0.5 - clampedY) * maxTilt).toFixed(3)}deg`,
+          tiltY: `${((clampedX - 0.5) * maxTilt).toFixed(3)}deg`,
+          shineX: `${(clampedX * 100).toFixed(2)}%`,
+          shineY: `${(clampedY * 100).toFixed(2)}%`,
+          imageX: `${((0.5 - clampedX) * 6).toFixed(2)}px`,
+          imageY: `${((0.5 - clampedY) * 6).toFixed(2)}px`,
+          angle: `${(clampedX * 180 + clampedY * 80).toFixed(2)}deg`,
+        };
+        card.style.setProperty("--lift", "-3px");
+        schedule();
+      };
+
+      const resetCard = () => {
+        nextStyle = {
+          tiltX: "0deg",
+          tiltY: "0deg",
+          shineX: "50%",
+          shineY: "50%",
+          imageX: "0px",
+          imageY: "0px",
+          angle: "135deg",
+        };
+        card.style.setProperty("--lift", "0px");
+        schedule();
+      };
+
+      const handlePointerEnter = () => {
+        card.style.setProperty("--lift", "-3px");
+      };
+
+      card.addEventListener("pointermove", handlePointerMove);
+      card.addEventListener("pointerenter", handlePointerEnter);
+      card.addEventListener("pointerleave", resetCard);
+      card.addEventListener("pointercancel", resetCard);
+
+      cleanups.push(() => {
+        if (frame) {
+          window.cancelAnimationFrame(frame);
+        }
+
+        card.removeEventListener("pointermove", handlePointerMove);
+        card.removeEventListener("pointerenter", handlePointerEnter);
+        card.removeEventListener("pointerleave", resetCard);
+        card.removeEventListener("pointercancel", resetCard);
+      });
+    });
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup());
+    };
+  }, []);
+};
+
 const App = () => {
   useScrollAnimations();
+  useBentoInteractions();
 
   return (
-    <main>
-      <Background />
-
+    <main className="page-shell">
       <section className="hero" aria-labelledby="page-title">
+        <div className="hero-backdrop" aria-hidden="true">
+          <span className="hero-fluid-sheet"></span>
+          <span className="hero-ribbon hero-ribbon-one"></span>
+          <span className="hero-ribbon hero-ribbon-two"></span>
+          <span className="hero-stars hero-stars-far"></span>
+          <span className="hero-stars hero-stars-mid"></span>
+        </div>
+
         <div className="hero-copy">
-          <p className="eyebrow tektur">music artist // developer</p>
-          <h1 id="page-title" className="font">
-            fireentity<wbr />
-            .space
+          <p className="category-label hero-kicker">music artist // developer</p>
+          <h1 id="page-title" className="hero-title">
+            <span>fireentity</span>
+            <span>.space</span>
           </h1>
-          <p className="hero-text">
+          <p className="hero-subtitle">
             Rhythm games, electronic releases, and strange interactive systems.
           </p>
         </div>
+
+        <div className="hero-horizon" aria-hidden="true"></div>
       </section>
 
-      <section id="work" className="container" aria-label="Featured work">
+      <section id="work" className="bento-grid" aria-label="Featured work">
         {projects.map((box, index) => (
           <Box key={box.title} index={index} {...box} />
         ))}

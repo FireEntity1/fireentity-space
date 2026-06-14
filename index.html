@@ -108,66 +108,32 @@
 
             if (!reduceMotion.matches) {
                 document.querySelectorAll(".bento-card").forEach((card) => {
-                    const maxTilt = 6;
-                    const state = {
-                        active: false,
-                        raf: null,
-                        currentX: 0,
-                        currentY: 0,
-                        currentShineX: 50,
-                        currentShineY: 50,
-                        currentSheen: 0,
-                        currentLift: 0,
-                        targetX: 0,
-                        targetY: 0,
-                        targetShineX: 50,
-                        targetShineY: 50,
-                        targetSheen: 0,
-                        targetLift: 0,
+                    const maxTilt = 2.8;
+                    let frame = 0;
+                    let nextStyle = {
+                        tiltX: "0deg",
+                        tiltY: "0deg",
+                        shineX: "50%",
+                        shineY: "50%",
+                        imageX: "0px",
+                        imageY: "0px",
+                        angle: "135deg",
                     };
 
-                    const render = () => {
-                        const ease = state.active ? 0.16 : 0.11;
-
-                        state.currentX += (state.targetX - state.currentX) * ease;
-                        state.currentY += (state.targetY - state.currentY) * ease;
-                        state.currentShineX += (state.targetShineX - state.currentShineX) * ease;
-                        state.currentShineY += (state.targetShineY - state.currentShineY) * ease;
-                        state.currentSheen += (state.targetSheen - state.currentSheen) * ease;
-                        state.currentLift += (state.targetLift - state.currentLift) * ease;
-
-                        card.style.setProperty("--tilt-x", `${state.currentX.toFixed(3)}deg`);
-                        card.style.setProperty("--tilt-y", `${state.currentY.toFixed(3)}deg`);
-                        card.style.setProperty("--shine-x", `${state.currentShineX.toFixed(2)}%`);
-                        card.style.setProperty("--shine-y", `${state.currentShineY.toFixed(2)}%`);
-                        card.style.setProperty(
-                            "--sheen-opacity",
-                            (0.28 + state.currentSheen * 0.34).toFixed(3),
-                        );
-                        card.style.setProperty("--lift", `${state.currentLift.toFixed(2)}px`);
-                        card.style.setProperty(
-                            "--sheen-angle",
-                            `${(state.currentShineX * 1.8 + state.currentShineY * 0.8).toFixed(2)}deg`,
-                        );
-
-                        const settled =
-                            Math.abs(state.targetX - state.currentX) < 0.01 &&
-                            Math.abs(state.targetY - state.currentY) < 0.01 &&
-                            Math.abs(state.targetShineX - state.currentShineX) < 0.05 &&
-                            Math.abs(state.targetShineY - state.currentShineY) < 0.05 &&
-                            Math.abs(state.targetSheen - state.currentSheen) < 0.01 &&
-                            Math.abs(state.targetLift - state.currentLift) < 0.02;
-
-                        if (!settled) {
-                            state.raf = window.requestAnimationFrame(render);
-                        } else {
-                            state.raf = null;
-                        }
+                    const applyCardState = () => {
+                        frame = 0;
+                        card.style.setProperty("--tilt-x", nextStyle.tiltX);
+                        card.style.setProperty("--tilt-y", nextStyle.tiltY);
+                        card.style.setProperty("--shine-x", nextStyle.shineX);
+                        card.style.setProperty("--shine-y", nextStyle.shineY);
+                        card.style.setProperty("--image-x", nextStyle.imageX);
+                        card.style.setProperty("--image-y", nextStyle.imageY);
+                        card.style.setProperty("--sheen-angle", nextStyle.angle);
                     };
 
-                    const start = () => {
-                        if (!state.raf) {
-                            state.raf = window.requestAnimationFrame(render);
+                    const schedule = () => {
+                        if (!frame) {
+                            frame = window.requestAnimationFrame(applyCardState);
                         }
                     };
 
@@ -178,32 +144,35 @@
                         const clampedX = Math.max(0, Math.min(1, x));
                         const clampedY = Math.max(0, Math.min(1, y));
 
-                        state.active = true;
-                        state.targetX = (0.5 - clampedY) * maxTilt;
-                        state.targetY = (clampedX - 0.5) * maxTilt;
-                        state.targetShineX = clampedX * 100;
-                        state.targetShineY = clampedY * 100;
-                        state.targetSheen = 1;
-                        state.targetLift = -4;
-                        start();
+                        nextStyle = {
+                            tiltX: `${((0.5 - clampedY) * maxTilt).toFixed(3)}deg`,
+                            tiltY: `${((clampedX - 0.5) * maxTilt).toFixed(3)}deg`,
+                            shineX: `${(clampedX * 100).toFixed(2)}%`,
+                            shineY: `${(clampedY * 100).toFixed(2)}%`,
+                            imageX: `${((0.5 - clampedX) * 6).toFixed(2)}px`,
+                            imageY: `${((0.5 - clampedY) * 6).toFixed(2)}px`,
+                            angle: `${(clampedX * 180 + clampedY * 80).toFixed(2)}deg`,
+                        };
+                        card.style.setProperty("--lift", "-3px");
+                        schedule();
                     });
 
                     const resetCard = () => {
-                        state.active = false;
-                        state.targetX = 0;
-                        state.targetY = 0;
-                        state.targetShineX = 50;
-                        state.targetShineY = 50;
-                        state.targetSheen = 0;
-                        state.targetLift = 0;
-                        start();
+                        nextStyle = {
+                            tiltX: "0deg",
+                            tiltY: "0deg",
+                            shineX: "50%",
+                            shineY: "50%",
+                            imageX: "0px",
+                            imageY: "0px",
+                            angle: "135deg",
+                        };
+                        card.style.setProperty("--lift", "0px");
+                        schedule();
                     };
 
                     card.addEventListener("pointerenter", () => {
-                        state.active = true;
-                        state.targetSheen = 1;
-                        state.targetLift = -4;
-                        start();
+                        card.style.setProperty("--lift", "-3px");
                     });
                     card.addEventListener("pointerleave", resetCard);
                     card.addEventListener("pointercancel", resetCard);

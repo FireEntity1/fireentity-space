@@ -50,35 +50,41 @@ const Box = ({
   featured = false,
   index = 0,
 }) => {
-  const imageClass = `image-${image_pos}`;
+  const cardClasses = ["identity-card", "game-card", "release-card", "contact-card"];
+  const imageClass = featured
+    ? "media-top"
+    : image_pos === "left"
+      ? "media-left"
+      : "media-right";
   const cardStyle = {
     "--box-width": `${size[1] * 20}rem`,
     "--box-min-height": `${size[0] * 20}rem`,
     "--box-accent": accent,
     "--box-index": index,
   };
+  const bodyClass = `body-copy${image ? "" : " link-stack"}`;
 
   return (
     <article
-      className={`box ${imageClass}${featured ? " is-featured" : ""}${
+      className={`bento-card ${cardClasses[index] ?? ""}${
         image ? "" : " no-image"
       }`}
       style={cardStyle}
     >
       {image && (
-        <div className="box-media">
-          <img src={image} alt="" className="box-image" loading="lazy" />
-        </div>
+        <figure className={`media-frame ${imageClass}`}>
+          <img src={image} alt="" loading="lazy" />
+        </figure>
       )}
 
-      <div className="box-content">
-        <div className="box-heading">
-          {eyebrow && <p className="box-eyebrow">{eyebrow}</p>}
+      <div className="card-content">
+        <div>
+          {eyebrow && <p className="accent-label">{eyebrow}</p>}
           <h2>{title}</h2>
-          {meta && <p className="box-meta">{meta}</p>}
+          {meta && <p className={`subheading ${featured ? "cyan" : "muted"}`}>{meta}</p>}
         </div>
 
-        <p className="box-text">{renderText(text)}</p>
+        <p className={bodyClass}>{renderText(text)}</p>
       </div>
     </article>
   );
