@@ -9,9 +9,9 @@
 	let cursorGlow: HTMLElement;
 
 	const songs = [
-		['01', 'FARAWAY', 'AMBIENT ELECTRONICA', '03:58'],
-		['02', 'STAR//BREAKER', 'SYNTHWAVE / BREAKBEAT', '04:21'],
-		['03', 'UNBOUND', 'CINEMATIC ELECTRONICA', '03:47']
+		['01', 'faraway', 'electronic/vocal synth', '4:45', 'SynthV Original Featuring Mai'],
+		['02', 'STAR//BREAKER', 'electronic/hardcore', '04:25', 'Track 2 in LIGHT//BOUND OST'],
+		['03', 'FRACTURED//ANOMALY', 'electronic', '02:38', 'Track 1 in LIGHT//BOUND OST']
 	];
 
 	const platformLinks = [
@@ -28,15 +28,15 @@
 			index: '01',
 			title: 'LIGHT//BOUND',
 			meta: 'RHYTHM GAME / IN DEVELOPMENT',
-			description: 'A project built around music, movement, and light.',
-			theme: 'light'
+			description: 'A game where the player\'s actions are tied to the music.',
+			theme: 'rhythm game'
 		},
 		{
 			index: '02',
 			title: 'VOIDBORNE',
-			meta: '2D METROIDVANIA',
-			description: 'Explore a kingdom ruled by light.',
-			theme: 'void'
+			meta: '2D METROIDVANIA / IN DEVELOPMENT',
+			description: 'A game where void enters a world of light',
+			theme: 'metroidvania'
 		}
 	];
 
@@ -253,9 +253,7 @@
 								<strong>{song[1]}</strong>
 								<small>{song[2]}</small>
 							</span>
-							<span class="wave-slot" aria-hidden="true">
-								{#if index === 0}<span class="wave">▂▅▇▃▆█▄▂▆▃▅▂</span>{/if}
-							</span>
+							<small class="song-description">{song[4]}</small>
 							<small>{song[3]}</small>
 						</button>
 
