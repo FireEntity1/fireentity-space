@@ -15,14 +15,22 @@
 		['SOUNDCLOUD', 'https://soundcloud.com']
 	];
 
+	// Add hosted album-art URLs here as they become available.
+	const songCoverUrls: Record<string, string | null> = {
+		faraway: '/images/covers/faraway-cover.png',
+		'star//breaker': '/images/covers/starbreaker_cover.jpg',
+		'fractured//anomaly': null
+	};
+
 	const songs = [
 		{
 			number: '01',
 			title: 'faraway',
 			genre: 'electronic/vocal synth',
 			duration: '4:45',
-			description: 'SynthV Original Featuring Mai',
-			links: platformLinks
+			description: 'Original song featuring Mai SynthV',
+			links: platformLinks,
+			coverUrl: songCoverUrls.faraway
 		},
 		{
 			number: '02',
@@ -30,7 +38,8 @@
 			genre: 'electronic/hardcore',
 			duration: '04:25',
 			description: 'Track 2 in LIGHT//BOUND OST',
-			links: platformLinks
+			links: platformLinks,
+			coverUrl: songCoverUrls['star//breaker']
 		},
 		{
 			number: '03',
@@ -38,11 +47,20 @@
 			genre: 'electronic',
 			duration: '02:38',
 			description: 'Track 1 in LIGHT//BOUND OST',
-			links: platformLinks
+			links: platformLinks,
+			coverUrl: songCoverUrls['fractured//anomaly']
 		}
 	];
 
+	const latestReleaseTitle = 'faraway';
+	const latestRelease = songs.find((song) => song.title === latestReleaseTitle) ?? songs[0];
+
 	let openSong = -1;
+	let unavailableCovers = new Set<string>();
+
+	function markCoverUnavailable(songNumber: string) {
+		unavailableCovers = new Set([...unavailableCovers, songNumber]);
+	}
 
 	const projects = [
 		{
@@ -212,6 +230,14 @@
 	{/if}
 {/snippet}
 
+{#snippet albumCover(song: (typeof songs)[number], label: string)}
+	{#if song.coverUrl && !unavailableCovers.has(song.number)}
+		<img src={song.coverUrl} alt={`${song.title} album cover`} onerror={() => markCoverUnavailable(song.number)} />
+	{:else}
+		{@render imagePlaceholder(label)}
+	{/if}
+{/snippet}
+
 <div class="page-shell">
 	<div class="atmosphere" aria-hidden="true">
 		<div class="haze-layer" bind:this={hazeLayer}>
@@ -257,27 +283,20 @@
 				<p class="intro">
 				</p>
 			</div>
-			<a class="scroll" href="#music">SCROLL <i></i></a>
 		</section>
 
 		<section class="release module" aria-labelledby="release-title">
 			<div class="release-copy">
 				<p class="kicker">LATEST RELEASE ☆</p>
 				<div>
-					<h2 id="release-title"><a href="#music">FARAWAY</a></h2>
-					<p>A JOURNEY THROUGH LIGHT<br />AND DISTANCE.</p>
+					<h2 id="release-title"><a href="#music">{latestRelease.title}</a></h2>
+					<p>{latestRelease.description}</p>
 				</div>
 				<a class="dark-button" href="#music">LISTEN NOW <span>▶</span></a>
 			</div>
 
-			<div class="album" role="img" aria-label="Placeholder album artwork for Faraway">
-				{@render imagePlaceholder('ALBUM ART')}
-			</div>
-
-			<div class="player">
-				<button aria-label="Play Faraway">▶</button>
-				<div><i></i></div>
-				<span>01:26 / 03:58</span>
+			<div class="album" class:has-cover={latestRelease.coverUrl && !unavailableCovers.has(latestRelease.number)}>
+				{@render albumCover(latestRelease, 'ALBUM ART')}
 			</div>
 		</section>
 
@@ -308,8 +327,8 @@
 
 						{#if openSong === index}
 							<div id={`song-detail-${index}`} class="song-detail">
-								<div class="song-cover" role="img" aria-label={`${song.title} cover art placeholder`}>
-									{@render imagePlaceholder('COVER ART')}
+								<div class="song-cover" class:has-cover={song.coverUrl && !unavailableCovers.has(song.number)}>
+									{@render albumCover(song, 'COVER ART')}
 								</div>
 								<div class="song-detail-copy">
 									<p class="song-detail-label">LISTEN TO {song.title} EVERYWHERE</p>
