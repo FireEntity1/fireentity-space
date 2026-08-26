@@ -8,17 +8,38 @@
 	let starLayer: HTMLElement;
 	let cursorGlow: HTMLElement;
 
-	const songs = [
-		['01', 'faraway', 'electronic/vocal synth', '4:45', 'SynthV Original Featuring Mai'],
-		['02', 'STAR//BREAKER', 'electronic/hardcore', '04:25', 'Track 2 in LIGHT//BOUND OST'],
-		['03', 'FRACTURED//ANOMALY', 'electronic', '02:38', 'Track 1 in LIGHT//BOUND OST']
-	];
-
 	const platformLinks = [
 		['SPOTIFY', 'https://open.spotify.com'],
 		['APPLE MUSIC', 'https://music.apple.com'],
 		['YOUTUBE', 'https://youtube.com'],
 		['SOUNDCLOUD', 'https://soundcloud.com']
+	];
+
+	const songs = [
+		{
+			number: '01',
+			title: 'faraway',
+			genre: 'electronic/vocal synth',
+			duration: '4:45',
+			description: 'SynthV Original Featuring Mai',
+			links: platformLinks
+		},
+		{
+			number: '02',
+			title: 'STAR//BREAKER',
+			genre: 'electronic/hardcore',
+			duration: '04:25',
+			description: 'Track 2 in LIGHT//BOUND OST',
+			links: platformLinks
+		},
+		{
+			number: '03',
+			title: 'FRACTURED//ANOMALY',
+			genre: 'electronic',
+			duration: '02:38',
+			description: 'Track 1 in LIGHT//BOUND OST',
+			links: platformLinks
+		}
 	];
 
 	let openSong = -1;
@@ -163,6 +184,34 @@
 	<span class="placeholder-label">{label}</span>
 {/snippet}
 
+{#snippet platformIcon(platform: string)}
+	{#if platform === 'SPOTIFY'}
+		<svg class="platform-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<circle cx="12" cy="12" r="9"></circle>
+			<path d="M7.2 9.2c3.7-1 7.2-.5 10.2 1.1"></path>
+			<path d="M7.8 12.2c3.1-.7 6.1-.3 8.8.9"></path>
+			<path d="M8.5 15.1c2.5-.5 4.8-.2 7 .7"></path>
+		</svg>
+	{:else if platform === 'APPLE MUSIC'}
+		<svg class="platform-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<rect x="3" y="3" width="18" height="18" rx="4"></rect>
+			<path d="M10 15.5V8.8l6-1.3v6.4"></path>
+			<circle cx="8.4" cy="16" r="1.6"></circle>
+			<circle cx="14.4" cy="14.4" r="1.6"></circle>
+		</svg>
+	{:else if platform === 'YOUTUBE'}
+		<svg class="platform-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<rect x="2.5" y="5.5" width="19" height="13" rx="4"></rect>
+			<path class="platform-icon-fill" d="m10 9 5 3-5 3Z"></path>
+		</svg>
+	{:else}
+		<svg class="platform-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M3 15.5v-2M5.5 17v-5M8 18v-7M10.5 18.5V9.8"></path>
+			<path d="M12.2 18.5h6.1a3.2 3.2 0 0 0 .4-6.4A5 5 0 0 0 9.2 11"></path>
+		</svg>
+	{/if}
+{/snippet}
+
 <div class="page-shell">
 	<div class="atmosphere" aria-hidden="true">
 		<div class="haze-layer" bind:this={hazeLayer}>
@@ -248,27 +297,36 @@
 							aria-expanded={openSong === index}
 							aria-controls={`song-detail-${index}`}
 						>
-							<small>{song[0]}</small>
+							<small>{song.number}</small>
 							<span class="title-group">
-								<strong>{song[1]}</strong>
-								<small>{song[2]}</small>
+								<strong>{song.title}</strong>
+								<small class="song-genre">{song.genre}</small>
 							</span>
-							<small class="song-description">{song[4]}</small>
-							<small>{song[3]}</small>
+							<small class="song-description">{song.description}</small>
+							<small class="song-duration">{song.duration}</small>
 						</button>
 
 						{#if openSong === index}
 							<div id={`song-detail-${index}`} class="song-detail">
-								<div class="song-cover" role="img" aria-label={`${song[1]} cover art placeholder`}>
+								<div class="song-cover" role="img" aria-label={`${song.title} cover art placeholder`}>
 									{@render imagePlaceholder('COVER ART')}
 								</div>
 								<div class="song-detail-copy">
-									<p>LISTEN TO {song[1]} EVERYWHERE</p>
-									<nav aria-label={`${song[1]} streaming links`}>
-										{#each platformLinks as platform}
-											<a href={platform[1]} target="_blank" rel="noreferrer">{platform[0]} ↗</a>
+									<p class="song-detail-label">LISTEN TO {song.title} EVERYWHERE</p>
+									<nav aria-label={`${song.title} streaming links`}>
+										{#each song.links as platform}
+											<a href={platform[1]} target="_blank" rel="noreferrer">
+												<span class="platform-name">
+													{@render platformIcon(platform[0])}
+													<span>{platform[0]}</span>
+												</span>
+												<span aria-hidden="true">↗</span>
+											</a>
 										{/each}
 									</nav>
+								</div>
+								<div class="song-title-backdrop" aria-hidden="true">
+									<span>{song.title}</span>
 								</div>
 							</div>
 						{/if}
