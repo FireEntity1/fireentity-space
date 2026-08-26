@@ -569,17 +569,25 @@ button {
 	padding: 0 20px;
 }
 
+.song-entry {
+	border-bottom: 1px solid rgba(169, 155, 190, 0.18);
+}
+
+.song-entry:last-child {
+	border-bottom: 0;
+}
+
 .song-row {
 	position: relative;
 	display: grid;
-	grid-template-columns: 42px minmax(100px, 1fr) minmax(80px, 150px) 52px 18px;
+	grid-template-columns: 42px minmax(100px, 1fr) minmax(80px, 150px) 52px;
 	align-items: center;
 	width: 100%;
 	height: 80px;
 	padding: 0;
 	background: none;
 	border: 0;
-	border-bottom: 1px solid rgba(169, 155, 190, 0.18);
+	border-bottom: 0;
 	text-align: left;
 	cursor: pointer;
 	transition: transform 340ms cubic-bezier(0.2, 0.75, 0.25, 1), border-color 320ms ease, background-color 320ms ease;
@@ -608,16 +616,24 @@ button {
 	color: #f6e8ff;
 }
 
-.song-row:nth-child(2) strong {
+.song-entry:nth-child(2) strong {
 	color: #d9e2ff;
 }
 
-.song-row:nth-child(3) strong {
+.song-entry:nth-child(3) strong {
 	color: #d5f5e9;
 }
 
-.song-row > span:last-child {
-	text-align: right;
+.title-group {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+}
+
+.title-group small {
+	font-size: 7px;
+	letter-spacing: 0.12em;
 }
 
 .wave {
@@ -633,12 +649,23 @@ button {
 	transition: opacity 300ms ease, text-shadow 320ms ease;
 }
 
+.wave-slot {
+	display: flex;
+	align-items: center;
+	min-height: 24px;
+}
+
 .song-row:hover,
 .song-row:focus-visible {
 	z-index: 1;
 	background: rgba(107, 131, 255, 0.045);
 	border-color: rgba(169, 155, 190, 0.48);
 	transform: translateX(4px);
+}
+
+.song-entry:has(.song-row:hover),
+.song-entry:has(.song-row:focus-visible) {
+	border-color: rgba(169, 155, 190, 0.48);
 }
 
 .song-row:hover strong,
@@ -651,6 +678,66 @@ button {
 .song-row:focus-visible .wave {
 	opacity: 1;
 	text-shadow: 0 0 12px rgba(240, 100, 200, 0.7);
+}
+
+.song-detail {
+	display: grid;
+	grid-template-columns: minmax(110px, 148px) 1fr;
+	gap: 22px;
+	padding: 18px 0 22px 42px;
+	background: rgba(107, 131, 255, 0.025);
+	border-top: 1px solid rgba(169, 155, 190, 0.12);
+	animation: detail-in 260ms ease-out both;
+}
+
+.song-cover {
+	display: grid;
+	aspect-ratio: 1 / 1;
+	place-items: center;
+	background: rgba(9, 7, 23, 0.65);
+	border: 1px solid rgba(169, 155, 190, 0.3);
+}
+
+.song-cover .placeholder-icon {
+	width: 28px;
+	height: 28px;
+}
+
+.song-detail-copy {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 17px;
+}
+
+.song-detail-copy p {
+	margin: 0;
+	color: rgba(184, 173, 191, 0.65);
+	font-size: 8px;
+	font-weight: 500;
+	letter-spacing: 0.15em;
+}
+
+.song-detail-copy nav {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px 18px;
+	max-width: 330px;
+}
+
+.song-detail-copy nav a {
+	padding-bottom: 6px;
+	color: rgba(248, 245, 250, 0.75);
+	border-bottom: 1px solid rgba(169, 155, 190, 0.28);
+	font-size: 8px;
+	font-weight: 500;
+	letter-spacing: 0.1em;
+	transition: color 180ms ease, border-color 180ms ease;
+}
+
+.song-detail-copy nav a:hover {
+	color: var(--pink);
+	border-color: var(--pink);
 }
 
 .streaming {
@@ -1306,7 +1393,7 @@ button {
 	}
 
 	.song-row {
-		grid-template-columns: 35px minmax(100px, 1fr) 95px 42px 16px;
+		grid-template-columns: 35px minmax(100px, 1fr) 95px 42px;
 	}
 
 	.project-card {
@@ -1576,7 +1663,7 @@ button {
 	}
 
 	.song-row {
-		grid-template-columns: 28px minmax(100px, 1fr) 40px 12px;
+		grid-template-columns: 28px minmax(100px, 1fr) 34px 40px;
 		height: 76px;
 	}
 
@@ -1590,6 +1677,21 @@ button {
 
 	.wave {
 		display: none;
+	}
+
+	.song-detail {
+		grid-template-columns: 86px 1fr;
+		gap: 15px;
+		padding: 14px 0 18px 28px;
+	}
+
+	.song-detail-copy {
+		gap: 13px;
+	}
+
+	.song-detail-copy nav {
+		grid-template-columns: 1fr;
+		gap: 8px;
 	}
 
 	.streaming {
@@ -1798,6 +1900,11 @@ button {
 	50% { transform: translate3d(2px, -2px, 0); }
 }
 
+@keyframes detail-in {
+	from { opacity: 0; transform: translateY(-6px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;
@@ -1815,6 +1922,7 @@ button {
 
 	.module,
 	.song-row,
+	.song-detail,
 	.release h2 a,
 	.project-copy h3 a,
 	.dark-button span,

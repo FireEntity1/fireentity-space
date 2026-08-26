@@ -9,10 +9,19 @@
 	let cursorGlow: HTMLElement;
 
 	const songs = [
-		['01', 'FARAWAY', '03:58'],
-		['02', 'STAR//BREAKER', '04:21'],
-		['03', 'UNBOUND', '03:47']
+		['01', 'FARAWAY', 'AMBIENT ELECTRONICA', '03:58'],
+		['02', 'STAR//BREAKER', 'SYNTHWAVE / BREAKBEAT', '04:21'],
+		['03', 'UNBOUND', 'CINEMATIC ELECTRONICA', '03:47']
 	];
+
+	const platformLinks = [
+		['SPOTIFY', 'https://open.spotify.com'],
+		['APPLE MUSIC', 'https://music.apple.com'],
+		['YOUTUBE', 'https://youtube.com'],
+		['SOUNDCLOUD', 'https://soundcloud.com']
+	];
+
+	let openSong = -1;
 
 	const projects = [
 		{
@@ -231,13 +240,41 @@
 
 			<div class="song-list">
 				{#each songs as song, index}
-					<button class:active={index === 0} class="song-row">
-						<small>{song[0]}</small>
-						<strong>{song[1]}</strong>
-						{#if index === 0}<span class="wave" aria-hidden="true">▂▅▇▃▆█▄▂▆▃▅▂</span>{/if}
-						<small>{song[2]}</small>
-						<span>↗</span>
-					</button>
+					<div class:expanded={openSong === index} class="song-entry">
+						<button
+							class:active={index === 0}
+							class="song-row"
+							onclick={() => (openSong = openSong === index ? -1 : index)}
+							aria-expanded={openSong === index}
+							aria-controls={`song-detail-${index}`}
+						>
+							<small>{song[0]}</small>
+							<span class="title-group">
+								<strong>{song[1]}</strong>
+								<small>{song[2]}</small>
+							</span>
+							<span class="wave-slot" aria-hidden="true">
+								{#if index === 0}<span class="wave">▂▅▇▃▆█▄▂▆▃▅▂</span>{/if}
+							</span>
+							<small>{song[3]}</small>
+						</button>
+
+						{#if openSong === index}
+							<div id={`song-detail-${index}`} class="song-detail">
+								<div class="song-cover" role="img" aria-label={`${song[1]} cover art placeholder`}>
+									{@render imagePlaceholder('COVER ART')}
+								</div>
+								<div class="song-detail-copy">
+									<p>LISTEN TO {song[1]} EVERYWHERE</p>
+									<nav aria-label={`${song[1]} streaming links`}>
+										{#each platformLinks as platform}
+											<a href={platform[1]} target="_blank" rel="noreferrer">{platform[0]} ↗</a>
+										{/each}
+									</nav>
+								</div>
+							</div>
+						{/if}
+					</div>
 				{/each}
 			</div>
 
