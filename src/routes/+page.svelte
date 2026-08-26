@@ -1,4 +1,8 @@
-<script>
+<script lang="ts">
+	import { onMount } from 'svelte';
+
+	let pageShell: HTMLElement;
+
 	const songs = [
 		['01', 'FARAWAY', '03:58'],
 		['02', 'STAR//BREAKER', '04:21'],
@@ -15,6 +19,67 @@
 			description: 'Explore a kingdom ruled by light.', theme: 'void'
 		}
 	];
+
+	onMount(() => {
+		const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		if (!pageShell || !finePointer.matches || reducedMotion.matches) return;
+
+		let targetX = 0;
+		let targetY = 0;
+		let currentX = 0;
+		let currentY = 0;
+		let targetGlowX = window.innerWidth / 2;
+		let targetGlowY = window.innerHeight / 2;
+		let glowX = targetGlowX;
+		let glowY = targetGlowY;
+		let frame: number;
+
+		const handlePointer = (event: PointerEvent) => {
+			targetX = event.clientX / window.innerWidth * 2 - 1;
+			targetY = event.clientY / window.innerHeight * 2 - 1;
+			targetGlowX = event.clientX;
+			targetGlowY = event.clientY;
+			pageShell.style.setProperty('--cursor-opacity', '1');
+		};
+
+		const handleLeave = () => {
+			targetX = 0;
+			targetY = 0;
+			pageShell.style.setProperty('--cursor-opacity', '0');
+		};
+
+		const render = () => {
+			currentX += (targetX - currentX) * 0.055;
+			currentY += (targetY - currentY) * 0.055;
+			glowX += (targetGlowX - glowX) * 0.075;
+			glowY += (targetGlowY - glowY) * 0.075;
+
+			pageShell.style.setProperty('--bg-x', `${currentX * 22}px`);
+			pageShell.style.setProperty('--bg-y', `${currentY * 16}px`);
+			pageShell.style.setProperty('--mid-x', `${currentX * 13}px`);
+			pageShell.style.setProperty('--mid-y', `${currentY * 9}px`);
+			pageShell.style.setProperty('--near-x', `${currentX * 8}px`);
+			pageShell.style.setProperty('--near-y', `${currentY * 6}px`);
+			pageShell.style.setProperty('--fg-x', `${currentX * 3.5}px`);
+			pageShell.style.setProperty('--fg-y', `${currentY * 2.5}px`);
+			pageShell.style.setProperty('--fg-reverse-x', `${currentX * -2.2}px`);
+			pageShell.style.setProperty('--fg-reverse-y', `${currentY * -1.6}px`);
+			pageShell.style.setProperty('--cursor-left', `${glowX}px`);
+			pageShell.style.setProperty('--cursor-top', `${glowY}px`);
+			frame = requestAnimationFrame(render);
+		};
+
+		window.addEventListener('pointermove', handlePointer, { passive: true });
+		document.documentElement.addEventListener('mouseleave', handleLeave);
+		frame = requestAnimationFrame(render);
+
+		return () => {
+			window.removeEventListener('pointermove', handlePointer);
+			document.documentElement.removeEventListener('mouseleave', handleLeave);
+			cancelAnimationFrame(frame);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -22,7 +87,7 @@
 	<meta name="description" content="Fireentity makes music, builds games, and writes software." />
 </svelte:head>
 
-<div class="page-shell">
+<div class="page-shell" bind:this={pageShell}>
 	<div class="atmosphere" aria-hidden="true">
 		<div class="haze-layer">
 			<i class="haze haze-blue"></i>
@@ -36,6 +101,7 @@
 			<i class="streak streak-pink-long"></i>
 			<i class="streak streak-violet"></i>
 		</div>
+		<div class="cursor-glow"></div>
 		<div class="star-layer">
 			<span class="star starburst blue" style="--x: 6%; --y: 24%; --s: 16px; --o: .42">✦</span>
 			<span class="star plus" style="--x: 19%; --y: 9%; --s: 8px; --o: .3">+</span>
@@ -89,7 +155,7 @@
 		<section class="release module" aria-labelledby="release-title">
 			<div class="release-copy">
 				<p class="kicker">LATEST RELEASE <span>✦</span></p>
-				<div><h2 id="release-title">FARAWAY</h2><p>A JOURNEY THROUGH LIGHT<br />AND DISTANCE.</p></div>
+				<div><h2 id="release-title"><a href="#music">FARAWAY</a></h2><p>A JOURNEY THROUGH LIGHT<br />AND DISTANCE.</p></div>
 				<a class="dark-button" href="#music">LISTEN NOW <span>▶</span></a>
 			</div>
 			<div class="album" role="img" aria-label="Placeholder album artwork for Faraway">
@@ -128,7 +194,7 @@
 							<small>{project.index}</small><i></i><span>{project.title}</span>
 						</div>
 						<div class="project-copy">
-							<div><small>{project.meta}</small><h3>{project.title}</h3><p>{project.description}</p></div>
+							<div><small>{project.meta}</small><h3><a href={`#${project.theme}`}>{project.title}</a></h3><p>{project.description}</p></div>
 							<a href={`#${project.theme}`}>VIEW PROJECT <span>→</span></a>
 						</div>
 					</article>
@@ -265,6 +331,25 @@
 	.star.starburst:nth-child(1){filter:blur(.1px)}
 	.grain{position:absolute;top:-12%;left:-12%;width:124%;height:124%;opacity:.026;mix-blend-mode:soft-light;will-change:transform;animation:grain-shift 1.6s steps(4,end) infinite}
 	.grain rect{fill:#fff}
+	.cursor-glow{position:absolute;top:var(--cursor-top,50vh);left:var(--cursor-left,50vw);width:clamp(420px,48vw,780px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(225,216,255,.07) 0%,rgba(169,155,190,.032) 31%,transparent 68%);filter:blur(24px);opacity:var(--cursor-opacity,0);transform:translate(-50%,-50%);transition:opacity 700ms ease;will-change:left,top,opacity}
+	.haze-layer{translate:var(--bg-x,0px) var(--bg-y,0px)}
+	.streak-layer{translate:var(--mid-x,0px) var(--mid-y,0px)}
+	.star-layer{translate:var(--near-x,0px) var(--near-y,0px)}
+
+	/* Suspended module motion and interaction */
+	.module{--hover-y:0px;--parallax-x:var(--fg-x,0px);--parallax-y:var(--fg-y,0px);position:relative;translate:var(--parallax-x) calc(var(--parallax-y) + var(--hover-y));transition:translate 360ms cubic-bezier(.2,.75,.25,1),border-color 340ms ease,box-shadow 380ms ease,background-color 340ms ease;will-change:transform,translate}
+	.songs,.about{--parallax-x:var(--fg-reverse-x,0px);--parallax-y:var(--fg-reverse-y,0px)}
+	.connect{--parallax-x:var(--fg-reverse-x,0px);--parallax-y:var(--fg-y,0px)}
+	.module:before{position:absolute;top:-1px;left:8%;z-index:4;width:24%;height:1px;background:linear-gradient(90deg,transparent,var(--pink),transparent);content:'';opacity:0;pointer-events:none;transition:opacity 360ms ease,width 420ms ease;box-shadow:0 0 13px rgba(240,100,200,.35)}
+	.release{animation:float-release 11.5s ease-in-out infinite}.songs{animation:float-songs 13.2s ease-in-out -3.1s infinite}.projects{animation:float-projects 14.8s ease-in-out -7.4s infinite}.about{animation:float-about 9.6s ease-in-out -1.8s infinite}.connect{animation:float-connect 12.7s ease-in-out -5.2s infinite}
+
+	.release h2 a,.project-copy h3 a{display:inline-block;transition:transform 320ms cubic-bezier(.2,.75,.25,1),color 300ms ease,text-shadow 340ms ease}
+	.release h2 a:hover,.release h2 a:focus-visible,.project-copy h3 a:hover,.project-copy h3 a:focus-visible{color:#fff;transform:translateX(3px);text-shadow:-.6px 0 rgba(227,84,112,.48),.6px 0 rgba(107,131,255,.58),0 0 18px rgba(169,155,190,.13)}
+	.dark-button span,.project-copy>a span{display:inline-block;transition:transform 300ms cubic-bezier(.2,.75,.25,1)}
+	.dark-button:hover span,.dark-button:focus-visible span,.project-copy>a:hover span,.project-copy>a:focus-visible span{transform:translateX(3px)}
+	.song-row{transition:transform 340ms cubic-bezier(.2,.75,.25,1),border-color 320ms ease,background-color 320ms ease}.song-row strong{transition:color 300ms ease,text-shadow 320ms ease}.song-row .wave{opacity:.52;transition:opacity 300ms ease,text-shadow 320ms ease}.song-row:hover,.song-row:focus-visible{z-index:1;border-color:rgba(169,155,190,.48);background:rgba(107,131,255,.045);transform:translateX(4px)}.song-row:hover strong,.song-row:focus-visible strong{color:#fff;text-shadow:0 0 16px rgba(169,155,190,.14)}.song-row:hover .wave,.song-row:focus-visible .wave{opacity:1;text-shadow:0 0 12px rgba(240,100,200,.7)}
+
+	@media(hover:hover) and (pointer:fine){.module:hover{--hover-y:-3px;border-color:rgba(214,205,226,.52);box-shadow:inset 0 1px 0 rgba(248,245,250,.075),inset 0 0 48px rgba(107,131,255,.045),0 12px 48px rgba(0,0,0,.35),0 0 34px rgba(107,131,255,.085)}.module:hover:before{width:34%;opacity:.8}.release:hover{box-shadow:inset 0 1px 0 rgba(248,245,250,.08),0 15px 55px rgba(0,0,0,.42),0 0 54px rgba(107,131,255,.12)}.connect:hover{box-shadow:inset 0 1px rgba(248,245,250,.07),0 10px 42px rgba(0,0,0,.3),0 0 38px rgba(200,62,164,.1)}}
 
 	@keyframes haze-parallax{from{transform:translate3d(-1.2%,-.8%,0) scale(1.01)}to{transform:translate3d(1.4%,1%,0) scale(1.035)}}
 	@keyframes blue-haze{from{transform:translate3d(-2%,0,0) rotate(-17deg) scale(.96)}to{transform:translate3d(7%,5%,0) rotate(-11deg) scale(1.08)}}
@@ -278,6 +363,11 @@
 	@keyframes star-parallax{from{transform:translate3d(-2px,-1px,0)}to{transform:translate3d(7px,5px,0)}}
 	@keyframes star-breathe{from{transform:translate3d(0,0,0) scale(.84);opacity:calc(var(--o) * .7)}to{transform:translate3d(3px,-4px,0) scale(1.08);opacity:var(--o)}}
 	@keyframes grain-shift{0%{transform:translate3d(-1%,1%,0)}25%{transform:translate3d(2%,-1%,0)}50%{transform:translate3d(-2%,-2%,0)}75%{transform:translate3d(1%,2%,0)}100%{transform:translate3d(-1%,1%,0)}}
+	@keyframes float-release{0%,100%{transform:translate3d(0,-1px,0)}47%{transform:translate3d(2px,3px,0)}76%{transform:translate3d(-1px,1px,0)}}
+	@keyframes float-songs{0%,100%{transform:translate3d(0,2px,0)}52%{transform:translate3d(-2px,-3px,0)}}
+	@keyframes float-projects{0%,100%{transform:translate3d(1px,0,0)}38%{transform:translate3d(-1px,-3px,0)}72%{transform:translate3d(2px,2px,0)}}
+	@keyframes float-about{0%,100%{transform:translate3d(0,-1px,0)}50%{transform:translate3d(2px,3px,0)}}
+	@keyframes float-connect{0%,100%{transform:translate3d(-1px,1px,0)}50%{transform:translate3d(2px,-2px,0)}}
 
-	@media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}.haze-layer,.haze,.streak-layer,.streak,.star-layer,.star,.grain{animation:none}}
+	@media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}.haze-layer,.haze,.streak-layer,.streak,.star-layer,.star,.grain,.module{animation:none}.module,.song-row,.release h2 a,.project-copy h3 a,.dark-button span,.project-copy>a span{transition:none}}
 </style>
