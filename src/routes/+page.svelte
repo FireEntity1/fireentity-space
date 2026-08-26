@@ -204,7 +204,7 @@
 
 		<section class="release module" aria-labelledby="release-title">
 			<div class="release-copy">
-				<p class="kicker">LATEST RELEASE <span>✦</span></p>
+				<p class="kicker">LATEST RELEASE ☆</p>
 				<div>
 					<h2 id="release-title"><a href="#music">FARAWAY</a></h2>
 					<p>A JOURNEY THROUGH LIGHT<br />AND DISTANCE.</p>
@@ -225,7 +225,7 @@
 
 		<section id="music" class="songs module" aria-labelledby="songs-title">
 			<header class="module-header">
-				<h2 id="songs-title">SONGS <span>✦</span></h2>
+				<h2 id="songs-title">SONGS <span>☆</span></h2>
 				<a href="#music">VIEW ALL ↗</a>
 			</header>
 
@@ -254,7 +254,7 @@
 
 		<section id="projects" class="projects module" aria-labelledby="projects-title">
 			<header class="module-header">
-				<h2 id="projects-title">PROJECTS <span>✦</span></h2>
+				<h2 id="projects-title">PROJECTS <span>☆</span></h2>
 				<a href="#projects">EXPLORE ALL ↗</a>
 			</header>
 
@@ -284,7 +284,7 @@
 
 		<section id="about" class="about module" aria-labelledby="about-title">
 			<div class="about-copy">
-				<header class="module-header"><h2 id="about-title">ABOUT <span>✦</span></h2></header>
+				<header class="module-header"><h2 id="about-title">ABOUT <span>☆</span></h2></header>
 				<p class="about-lede">Music producer, developer,<br />and creator.</p>
 				<p class="about-note">Currently making new worlds and sounds.</p>
 				<div class="about-actions">
@@ -292,7 +292,7 @@
 					<a href="#about">MORE ABOUT ME →</a>
 				</div>
 			</div>
-			<div class="about-mark" aria-hidden="true"><i></i><span>✦</span></div>
+			<div class="about-mark" aria-hidden="true"><i></i><span>☆</span></div>
 		</section>
 
 		<footer class="connect module">
@@ -305,7 +305,7 @@
 					<a href="#discord" aria-label="Discord">DC</a>
 				</nav>
 			</div>
-			<p>✦ THANKS FOR VISITING.</p>
+			<p>☆ THANKS FOR VISITING ☆</p>
 		</footer>
 	</main>
 </div>

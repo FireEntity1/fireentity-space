@@ -319,8 +319,6 @@ button {
 }
 
 /* Shared module typography */
-.kicker,
-.module-header h2,
 .module-header > a,
 .release h2 + p,
 .project-copy small,
@@ -335,8 +333,6 @@ button {
 	text-transform: uppercase;
 }
 
-.kicker,
-.module-header h2,
 .module-header > a,
 .release h2 + p,
 .project-copy small {
@@ -355,7 +351,16 @@ button {
 
 .module-header h2 {
 	margin: 0;
-	font-size: 10px;
+	background: var(--rainbow);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	font-family: var(--display);
+	font-size: clamp(15px, 1vw, 18px);
+	font-weight: 400;
+	letter-spacing: 0.06em;
+	line-height: 1;
+	text-shadow: 0 0 16px rgba(221, 196, 255, 0.1);
 }
 
 .module-header > a {
@@ -366,7 +371,16 @@ button {
 	display: flex;
 	justify-content: space-between;
 	margin: 0;
-	font-size: 9px;
+	background: var(--rainbow);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	font-family: var(--display);
+	font-size: clamp(15px, 1vw, 18px);
+	font-weight: 400;
+	letter-spacing: 0.06em;
+	line-height: 1;
+	text-shadow: 0 0 16px rgba(221, 196, 255, 0.1);
 }
 
 .kicker span,
@@ -474,7 +488,10 @@ button {
 	justify-content: center;
 	flex-direction: column;
 	gap: 12px;
-	min-height: 371px;
+	align-self: center;
+	width: 100%;
+	min-height: 0;
+	aspect-ratio: 1 / 1;
 	overflow: hidden;
 	background: rgba(9, 7, 23, 0.72);
 	color: rgba(169, 155, 190, 0.58);
@@ -941,6 +958,19 @@ button {
 	letter-spacing: 0.13em;
 }
 
+.connect > div > span {
+	background: var(--rainbow);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	font-family: var(--display);
+	font-size: clamp(15px, 1vw, 18px);
+	font-weight: 400;
+	letter-spacing: 0.06em;
+	line-height: 1;
+	text-shadow: 0 0 16px rgba(221, 196, 255, 0.1);
+}
+
 .connect > p {
 	background: var(--rainbow);
 	background-clip: text;
@@ -1371,10 +1401,6 @@ button {
 		padding: 18px 15px;
 	}
 
-	.album {
-		min-height: 345px;
-	}
-
 	.dark-button {
 		width: 132px;
 	}
@@ -1509,7 +1535,7 @@ button {
 	}
 
 	.kicker {
-		font-size: 7px;
+		font-size: 14px;
 	}
 
 	.release h2 {
@@ -1524,10 +1550,6 @@ button {
 		width: 100%;
 		padding: 11px 9px;
 		font-size: 7px;
-	}
-
-	.album {
-		min-height: 340px;
 	}
 
 	.player {
