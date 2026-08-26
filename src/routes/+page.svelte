@@ -23,6 +23,48 @@
 </svelte:head>
 
 <div class="page-shell">
+	<div class="atmosphere" aria-hidden="true">
+		<div class="haze-layer">
+			<i class="haze haze-blue"></i>
+			<i class="haze haze-violet"></i>
+			<i class="haze haze-magenta"></i>
+			<i class="haze haze-red"></i>
+		</div>
+		<div class="streak-layer">
+			<i class="streak streak-blue-long"></i>
+			<i class="streak streak-blue-soft"></i>
+			<i class="streak streak-pink-long"></i>
+			<i class="streak streak-violet"></i>
+		</div>
+		<div class="star-layer">
+			<span class="star starburst blue" style="--x: 6%; --y: 24%; --s: 16px; --o: .42">✦</span>
+			<span class="star plus" style="--x: 19%; --y: 9%; --s: 8px; --o: .3">+</span>
+			<span class="star pixel" style="--x: 31%; --y: 19%; --s: 2px; --o: .7"></span>
+			<span class="star cross pink" style="--x: 48%; --y: 8%; --s: 8px; --o: .46"></span>
+			<span class="star pixel" style="--x: 62%; --y: 27%; --s: 3px; --o: .38"></span>
+			<span class="star starburst pink" style="--x: 88%; --y: 16%; --s: 11px; --o: .5">✦</span>
+			<span class="star plus blue" style="--x: 95%; --y: 38%; --s: 7px; --o: .36">+</span>
+			<span class="star pixel pink" style="--x: 12%; --y: 55%; --s: 2px; --o: .52"></span>
+			<span class="star cross" style="--x: 39%; --y: 48%; --s: 6px; --o: .28"></span>
+			<span class="star starburst" style="--x: 71%; --y: 47%; --s: 7px; --o: .3">✦</span>
+			<span class="star pixel blue" style="--x: 84%; --y: 59%; --s: 3px; --o: .7"></span>
+			<span class="star plus pink" style="--x: 24%; --y: 72%; --s: 9px; --o: .32">+</span>
+			<span class="star pixel" style="--x: 53%; --y: 76%; --s: 2px; --o: .45"></span>
+			<span class="star cross blue" style="--x: 93%; --y: 81%; --s: 7px; --o: .35"></span>
+			<span class="star starburst pink" style="--x: 8%; --y: 88%; --s: 13px; --o: .38">✦</span>
+			<span class="star pixel" style="--x: 37%; --y: 94%; --s: 2px; --o: .58"></span>
+			<span class="star plus blue" style="--x: 67%; --y: 90%; --s: 6px; --o: .31">+</span>
+			<span class="star pixel pink" style="--x: 79%; --y: 96%; --s: 2px; --o: .55"></span>
+		</div>
+		<svg class="grain" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<filter id="grain-filter">
+				<feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="3" stitchTiles="stitch" />
+				<feColorMatrix type="saturate" values="0" />
+			</filter>
+			<rect width="100%" height="100%" filter="url(#grain-filter)" />
+		</svg>
+	</div>
+
 	<nav class="topbar" aria-label="Primary navigation">
 		<a class="wordmark" href="#top">FIREENTITY</a>
 		<div class="nav-links">
@@ -194,5 +236,48 @@
 	.about-mark{border-color:var(--hairline)}.about-mark>i{border-color:rgba(169,155,190,.3);box-shadow:0 0 35px rgba(107,131,255,.09)}.about-mark>i:after{background:var(--pink);box-shadow:0 0 16px rgba(240,100,200,.65)}.about-mark span{color:var(--ink);text-shadow:0 0 24px rgba(107,131,255,.34)}.status i{background:var(--blue);box-shadow:0 0 0 3px rgba(107,131,255,.12),0 0 12px rgba(107,131,255,.75)}.about-actions a{color:var(--ink);font-weight:500;transition:color 180ms ease}.about-actions a:hover{color:var(--pink)}
 	.connect{background:linear-gradient(100deg,rgba(36,19,61,.88),rgba(16,11,36,.82));border-color:rgba(169,155,190,.34);box-shadow:inset 0 1px rgba(248,245,250,.04),0 0 42px rgba(200,62,164,.07)}.connect>div>span,.connect>p{color:var(--secondary);font-weight:500}.connect nav a{color:var(--secondary);border-color:rgba(169,155,190,.34);transition:color 180ms ease,border-color 180ms ease,box-shadow 180ms ease}.connect nav a:hover{color:var(--ink);border-color:var(--pink);box-shadow:0 0 15px rgba(240,100,200,.2)}
 
-	@media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}}
+	/* Multi-depth atmospheric background */
+	.page-shell{position:relative;isolation:isolate;min-height:100vh;background:var(--base)}
+	.topbar,.composition{position:relative;z-index:2}
+	.topbar{position:absolute}
+	.atmosphere{position:fixed;inset:0;z-index:0;overflow:hidden;background:#080716;pointer-events:none;contain:strict}
+	.haze-layer,.streak-layer,.star-layer{position:absolute;inset:-8%;will-change:transform}
+	.haze-layer{animation:haze-parallax 38s ease-in-out infinite alternate}
+	.haze{position:absolute;display:block;filter:blur(clamp(90px,11vw,190px));border-radius:43% 57% 61% 39% / 56% 38% 62% 44%;will-change:transform}
+	.haze-blue{top:7%;left:-31%;width:74vw;height:31vw;min-height:320px;background:#4668ff;opacity:.13;transform:rotate(-17deg);animation:blue-haze 34s ease-in-out infinite alternate}
+	.haze-violet{top:-25%;right:-19%;width:60vw;height:53vw;background:#6d3aa1;opacity:.14;transform:rotate(22deg);animation:violet-haze 29s ease-in-out infinite alternate}
+	.haze-magenta{right:-32%;bottom:-14%;width:71vw;height:44vw;min-height:360px;background:#c83ea4;opacity:.105;transform:rotate(-12deg);animation:magenta-haze 40s ease-in-out infinite alternate}
+	.haze-red{bottom:3%;left:-29%;width:52vw;height:26vw;min-height:250px;background:#e35470;opacity:.055;transform:rotate(9deg);animation:red-haze 25s ease-in-out infinite alternate}
+
+	.streak-layer{animation:streak-parallax 27s ease-in-out infinite alternate}
+	.streak{position:absolute;display:block;height:clamp(7px,1vw,16px);background:linear-gradient(90deg,transparent,rgba(248,245,250,.025) 18%,currentColor 48%,rgba(248,245,250,.025) 76%,transparent);filter:blur(15px);opacity:.13;transform-origin:center;will-change:transform}
+	.streak:after{position:absolute;top:50%;left:18%;width:62%;height:1px;background:currentColor;box-shadow:0 0 14px currentColor,0 0 34px currentColor;content:'';opacity:.45}
+	.streak-blue-long{top:24%;left:-18%;width:79vw;color:#6b83ff;transform:rotate(-12deg);animation:blue-streak 23s ease-in-out infinite alternate}
+	.streak-blue-soft{top:51%;left:8%;width:51vw;color:#8698ff;opacity:.07;transform:rotate(7deg);animation:soft-streak 31s ease-in-out infinite alternate}
+	.streak-pink-long{right:-24%;bottom:21%;width:73vw;color:#f064c8;opacity:.1;transform:rotate(-15deg);animation:pink-streak 36s ease-in-out infinite alternate}
+	.streak-violet{right:-4%;top:13%;width:42vw;color:#9d6cca;opacity:.07;transform:rotate(24deg);animation:soft-streak 28s ease-in-out infinite alternate-reverse}
+
+	.star-layer{inset:0;animation:star-parallax 24s ease-in-out infinite alternate}
+	.star{--glow:rgba(248,245,250,.48);position:absolute;top:var(--y);left:var(--x);display:block;color:#f8f5fa;font-family:Georgia,serif;font-size:var(--s);line-height:1;opacity:var(--o);text-shadow:0 0 8px var(--glow),0 0 18px var(--glow);will-change:transform,opacity;animation:star-breathe 11s ease-in-out infinite alternate}
+	.star:nth-child(3n){animation-duration:17s;animation-delay:-4s}.star:nth-child(4n){animation-duration:23s;animation-delay:-9s}.star.blue{--glow:rgba(107,131,255,.72);color:#aab6ff}.star.pink{--glow:rgba(240,100,200,.66);color:#f2acd9}
+	.star.pixel{width:var(--s);height:var(--s);background:currentColor;border-radius:1px}
+	.star.cross{width:var(--s);height:var(--s)}.star.cross:before,.star.cross:after{position:absolute;top:50%;left:50%;background:currentColor;content:'';transform:translate(-50%,-50%)}.star.cross:before{width:100%;height:1px}.star.cross:after{width:1px;height:100%}
+	.star.starburst:nth-child(1){filter:blur(.1px)}
+	.grain{position:absolute;top:-12%;left:-12%;width:124%;height:124%;opacity:.026;mix-blend-mode:soft-light;will-change:transform;animation:grain-shift 1.6s steps(4,end) infinite}
+	.grain rect{fill:#fff}
+
+	@keyframes haze-parallax{from{transform:translate3d(-1.2%,-.8%,0) scale(1.01)}to{transform:translate3d(1.4%,1%,0) scale(1.035)}}
+	@keyframes blue-haze{from{transform:translate3d(-2%,0,0) rotate(-17deg) scale(.96)}to{transform:translate3d(7%,5%,0) rotate(-11deg) scale(1.08)}}
+	@keyframes violet-haze{from{transform:translate3d(2%,-2%,0) rotate(22deg) scale(1)}to{transform:translate3d(-7%,7%,0) rotate(16deg) scale(1.09)}}
+	@keyframes magenta-haze{from{transform:translate3d(3%,3%,0) rotate(-12deg) scale(1.02)}to{transform:translate3d(-7%,-4%,0) rotate(-7deg) scale(.94)}}
+	@keyframes red-haze{from{transform:translate3d(-2%,4%,0) rotate(9deg) scale(.97)}to{transform:translate3d(6%,-4%,0) rotate(15deg) scale(1.06)}}
+	@keyframes streak-parallax{from{transform:translate3d(-.6%,.5%,0)}to{transform:translate3d(1.1%,-.8%,0)}}
+	@keyframes blue-streak{from{transform:translate3d(-6%,2%,0) rotate(-12deg) scaleX(.94)}to{transform:translate3d(8%,-3%,0) rotate(-9deg) scaleX(1.06)}}
+	@keyframes pink-streak{from{transform:translate3d(5%,3%,0) rotate(-15deg) scaleX(1.04)}to{transform:translate3d(-8%,-3%,0) rotate(-12deg) scaleX(.94)}}
+	@keyframes soft-streak{from{transform:translate3d(-3%,1%,0) rotate(7deg)}to{transform:translate3d(6%,-2%,0) rotate(10deg)}}
+	@keyframes star-parallax{from{transform:translate3d(-2px,-1px,0)}to{transform:translate3d(7px,5px,0)}}
+	@keyframes star-breathe{from{transform:translate3d(0,0,0) scale(.84);opacity:calc(var(--o) * .7)}to{transform:translate3d(3px,-4px,0) scale(1.08);opacity:var(--o)}}
+	@keyframes grain-shift{0%{transform:translate3d(-1%,1%,0)}25%{transform:translate3d(2%,-1%,0)}50%{transform:translate3d(-2%,-2%,0)}75%{transform:translate3d(1%,2%,0)}100%{transform:translate3d(-1%,1%,0)}}
+
+	@media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}.haze-layer,.haze,.streak-layer,.streak,.star-layer,.star,.grain{animation:none}}
 </style>
