@@ -118,37 +118,6 @@ button {
 	scroll-margin-top: 100px;
 }
 
-.nav-decor {
-	grid-column: 12;
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: 25px;
-}
-
-.nav-star {
-	color: var(--pink);
-	font-size: 18px;
-	text-shadow: 0 0 18px rgba(255, 180, 220, 0.55);
-}
-
-.menu {
-	display: grid;
-	gap: 5px;
-	width: 22px;
-}
-
-.menu i {
-	display: block;
-	height: 1px;
-	background: var(--lavender);
-}
-
-.menu i:last-child {
-	width: 13px;
-	margin-left: auto;
-}
-
 /* Editorial grid */
 .composition {
 	--gap: clamp(14px, 1.55vw, 26px);
@@ -1489,14 +1458,6 @@ button {
 		grid-column: 3 / 7;
 	}
 
-	.nav-decor {
-		grid-column: 8;
-	}
-
-	.nav-star {
-		display: none;
-	}
-
 	.composition {
 		grid-template-columns: repeat(8, minmax(0, 1fr));
 		grid-template-rows: auto;
@@ -1638,14 +1599,6 @@ button {
 
 	.nav-links a {
 		font-size: 15px;
-	}
-
-	.nav-star {
-		display: none;
-	}
-
-	.nav-decor {
-		display: none;
 	}
 
 	.composition {

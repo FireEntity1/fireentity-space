@@ -268,10 +268,6 @@
 			<a href="#projects">PROJECTS</a>
 			<a href="#about">ABOUT</a>
 		</div>
-		<div class="nav-decor" aria-hidden="true">
-			<span class="nav-star">✦</span>
-			<span class="menu"><i></i><i></i></span>
-		</div>
 	</nav>
 
 	<main id="top" class="composition" bind:this={composition}>
