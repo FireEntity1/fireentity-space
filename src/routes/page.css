@@ -144,7 +144,7 @@ button {
 	z-index: 2;
 	display: grid;
 	grid-template-columns: repeat(12, minmax(0, 1fr));
-	grid-template-rows: 420px 55px 450px 260px 130px;
+	grid-template-rows: minmax(420px, auto) 55px 450px 260px 130px;
 	gap: 20px var(--gap);
 	width: 100%;
 	padding: 84px clamp(24px, 3.1vw, 52px) 36px;
@@ -1394,7 +1394,7 @@ button {
 		grid-row: auto;
 		grid-template-columns: 0.9fr 1.1fr;
 		min-height: 435px;
-		margin-top: -58px;
+		margin-top: 0;
 	}
 
 	.release-copy {
@@ -1450,7 +1450,7 @@ button {
 		grid-column: 1 / 7;
 		grid-row: 5;
 		min-height: 278px;
-		margin-top: -5px;
+		margin-top: 0;
 	}
 
 	.about-lede {
