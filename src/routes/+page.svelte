@@ -263,7 +263,6 @@
 	</div>
 
 	<nav class="topbar" aria-label="Primary navigation">
-		<a class="wordmark" href="#top">FIREENTITY</a>
 		<div class="nav-links">
 			<a href="#music">MUSIC</a>
 			<a href="#projects">PROJECTS</a>
