@@ -195,11 +195,8 @@
 		<section class="hero" aria-labelledby="hero-title">
 			<h1 id="hero-title">FIREENTITY</h1>
 			<div class="hero-copy">
-				<p class="disciplines">music <b>/</b> games <b>/</b> software</p>
+				<p class="disciplines"> music artist <b>/</b> gamedev <b>/</b> programmer </p>
 				<p class="intro">
-					welcome to my space on the internet.<br />
-					i make music, build games, and write code.<br />
-					this is where all of it lives.
 				</p>
 			</div>
 			<a class="scroll" href="#music">SCROLL <i></i></a>
