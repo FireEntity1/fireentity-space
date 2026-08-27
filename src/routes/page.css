@@ -327,6 +327,11 @@ button {
 	text-transform: uppercase;
 }
 
+.about-note {
+	font-size:1em !important;
+	text-transform: none !important;
+}
+
 .module-header > a,
 .release h2 + p,
 .project-copy small {

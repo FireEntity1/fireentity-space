@@ -406,9 +406,8 @@
 			<div class="about-copy">
 				<header class="module-header"><h2 id="about-title">ABOUT <span>☆</span></h2></header>
 				<p class="about-lede">Music producer, developer,<br />and creator.</p>
-				<p class="about-note">Currently making new worlds and sounds.</p>
+				<p class="about-note">Currently on break for school :) Will be back at it soon!!</p>
 				<div class="about-actions">
-					<span class="status"><i></i> ONLINE</span>
 					<a href="#about">MORE ABOUT ME →</a>
 				</div>
 			</div>
