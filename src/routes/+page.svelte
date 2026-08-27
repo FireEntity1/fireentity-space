@@ -58,6 +58,20 @@
 	let openSong = -1;
 	let unavailableCovers = new Set<string>();
 
+	function scrollToSection(event: MouseEvent, sectionId: string) {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+		const section = document.getElementById(sectionId);
+		if (!section) return;
+
+		event.preventDefault();
+		section.scrollIntoView({
+			behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+			block: 'start'
+		});
+		history.pushState(null, '', `#${sectionId}`);
+	}
+
 	function markCoverUnavailable(songNumber: string) {
 		unavailableCovers = new Set([...unavailableCovers, songNumber]);
 	}
@@ -264,9 +278,9 @@
 
 	<nav class="topbar" aria-label="Primary navigation">
 		<div class="nav-links">
-			<a href="#music">MUSIC</a>
-			<a href="#projects">PROJECTS</a>
-			<a href="#about">ABOUT</a>
+			<a href="#music" onclick={(event) => scrollToSection(event, 'music')}>MUSIC</a>
+			<a href="#projects" onclick={(event) => scrollToSection(event, 'projects')}>PROJECTS</a>
+			<a href="#about" onclick={(event) => scrollToSection(event, 'about')}>ABOUT</a>
 		</div>
 	</nav>
 
@@ -311,7 +325,6 @@
 							aria-expanded={openSong === index}
 							aria-controls={`song-detail-${index}`}
 						>
-							<small>{song.number}</small>
 							<span class="title-group">
 								<strong>{song.title}</strong>
 								<small class="song-genre">{song.genre}</small>
@@ -404,7 +417,7 @@
 
 		<footer class="connect module">
 			<div>
-				<span>LET'S CONNECT</span>
+				<span>CONTACT/SOCIALS</span>
 				<nav aria-label="Social links">
 					<a href="mailto:hello@fireentity.space" aria-label="Email">@</a>
 					<a href="#youtube" aria-label="YouTube">YT</a>
