@@ -189,7 +189,7 @@
 </script>
 
 <svelte:head>
-	<title>Fireentity — Music, Games & Software</title>
+	<title>fireentity</title>
 	<meta name="description" content="Fireentity makes music, builds games, and writes software." />
 </svelte:head>
 
@@ -272,7 +272,7 @@
 
 	<main id="top" class="composition" bind:this={composition}>
 		<section class="hero" aria-labelledby="hero-title">
-			<h1 id="hero-title">FIREENTITY</h1>
+			<h1 id="hero-title">fireentity</h1>
 			<div class="hero-copy">
 				<p class="disciplines"> music artist <b>/</b> gamedev <b>/</b> programmer </p>
 				<p class="intro">

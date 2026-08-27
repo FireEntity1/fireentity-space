@@ -211,6 +211,25 @@ button {
 	padding-top: 20px;
 }
 
+.hero::before {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 0;
+	width: 100%;
+	color: rgba(207, 194, 226, 0.04);
+	content: 'fireentity';
+	font-family: var(--display);
+	font-size: clamp(84px, 12vw, 260px);
+	font-weight: 400;
+	letter-spacing: -0.075em;
+	line-height: 0.88;
+	pointer-events: none;
+	text-align: center;
+	transform: translate(-50%, -50%);
+	white-space: nowrap;
+}
+
 .hero h1 {
 	position: relative;
 	z-index: 2;
@@ -221,10 +240,10 @@ button {
 	-webkit-background-clip: text;
 	color: transparent;
 	font-family: var(--display);
-	font-size: clamp(72px, 9.7vw, 164px);
+	font-size: clamp(92px, 12.5vw, 220px);
 	font-weight: 400;
 	letter-spacing: -0.058em;
-	line-height: 0.72;
+	line-height: 0.88;
 	text-align: center;
 	text-shadow:
 		0 0 18px rgba(255, 180, 220, 0.18),
